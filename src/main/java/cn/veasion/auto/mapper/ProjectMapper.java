@@ -46,6 +46,6 @@ public interface ProjectMapper {
     /**
      * 查询list
      */
-    List<ProjectPO> queryList();
+    List<ProjectPO> queryList(ProjectPO projectPO);
 
 }

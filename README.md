@@ -1,35 +1,20 @@
-# Api Testing UI
+# 接口自动化测试框架
+## 简介
 
-## 说明
+接口自动化测试
 
-[前端地址github](https://github.com/veasion/api_testing_ui)
-[后端地址github](https://github.com/veasion/api_testing)
 
-## Build Setup
 
-运行
-
+## 示例
 ```
-npm install [ 慢的话用  npm install --registry https://registry.npm.taobao.org]
+GET http://www.baidu.com
 ```
 
-修改配置
+## 赞助
 
-找到 `vue.config.js` 修改变量即可
+项目的发展离不开你的支持，请作者喝杯咖啡吧！
 
-```
-const apiHost = 'localhost' // 后端接口地址
-const apiPort = 8080 // 后端端口
-```
+ps：辣条也行 ☕！
 
-启动 
+![支付宝](https://veasion.oss-cn-shanghai.aliyuncs.com/alipay.png?x-oss-process=image/resize,m_lfit,h_360,w_360)
 
-```
- npm run dev
-```
-
-打包
-
-```
-npm run build:prod
-```

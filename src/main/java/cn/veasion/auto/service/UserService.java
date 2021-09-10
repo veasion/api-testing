@@ -1,6 +1,7 @@
 package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.UserPO;
+import com.github.pagehelper.Page;
 
 /**
  * UserService
@@ -10,6 +11,12 @@ import cn.veasion.auto.model.UserPO;
  */
 public interface UserService {
 
+    UserPO getById(int id);
+
     UserPO queryByUsername(String username);
+
+    Page<UserPO> listPage(UserPO userPO, int pageIndex, int pageSize);
+
+    void saveOrUpdateWithTx(UserPO userPO);
 
 }

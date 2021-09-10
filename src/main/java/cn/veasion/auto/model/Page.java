@@ -15,6 +15,10 @@ public class Page<T> extends R<Page.PageContent<T>> {
         super(PageContent.of(data, total));
     }
 
+    public static <T> Page<T> ok(com.github.pagehelper.Page<T> page) {
+        return ok(page, (int) page.getTotal());
+    }
+
     public static <T> Page<T> ok(List<T> data, Integer total) {
         return new Page<>(data, total);
     }

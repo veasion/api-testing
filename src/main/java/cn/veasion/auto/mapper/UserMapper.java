@@ -2,6 +2,8 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.UserPO;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -46,11 +48,11 @@ public interface UserMapper {
     /**
      * 根据id查询
      */
-    UserPO queryByUsername(String username);
+    UserPO queryByUsername(@Param("username") String username, @Param("notEqId") Integer notEqId);
 
     /**
      * 查询list
      */
-    List<UserPO> queryList();
+    List<UserPO> queryList(UserPO userPO);
 
 }

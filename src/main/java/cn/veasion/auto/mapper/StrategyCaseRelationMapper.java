@@ -1,7 +1,10 @@
 package cn.veasion.auto.mapper;
 
+import cn.veasion.auto.model.ApiTestCasePO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.StrategyCaseRelationPO;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -46,6 +49,11 @@ public interface StrategyCaseRelationMapper {
     /**
      * 查询list
      */
-    List<StrategyCaseRelationPO> queryList();
+    List<ApiTestCasePO> queryList(Integer executStrategyId);
+
+    /**
+     * 删除
+     */
+    int delete(@Param("executStrategyId") int executStrategyId, @Param("caseIds") List<Integer> caseIds);
 
 }

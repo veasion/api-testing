@@ -46,6 +46,6 @@ public interface ApiLogMapper {
     /**
      * 查询list
      */
-    List<ApiLogPO> queryList();
+    List<ApiLogPO> queryList(ApiLogPO apiLogPO);
 
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.veasion.auto.mapper.ApiTestCaseMapper">
 
-    <insert id="insert">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into api_test_case
         (
             project_id, case_name, case_desc, module, 
@@ -97,19 +97,7 @@
     </select>
 
     <select id="queryList" resultType="cn.veasion.auto.model.ApiTestCasePO">
-        select * from api_test_case
-    </select>
-
-    <!-- 分页查询代码 -->
-    <!--
-    <select id="queryListPage" resultType="cn.veasion.auto.model.ApiTestCasePO">
-        select t.* from api_test_case t
-        <include refid="whereSQL" />
-        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
-    </select>
-
-    <select id="queryCount" resultType="int">
-        select count(1) from api_test_case t
+        select * from api_test_case where is_deleted = 0
         <include refid="whereSQL" />
     </select>
 
@@ -122,35 +110,21 @@
                 and t.project_id = #{projectId}
             </if>
             <if test="caseName != null and caseName.trim() != ''">
-                and t.case_name like concat(#{caseName}, '%')
-            </if>
-            <if test="caseDesc != null and caseDesc.trim() != ''">
-                and t.case_desc like concat(#{caseDesc}, '%')
+                and t.case_name like concat('%', #{caseName}, '%')
             </if>
             <if test="module != null and module.trim() != ''">
-                and t.module like concat(#{module}, '%')
+                and t.module like concat('%', #{module}, '%')
             </if>
             <if test="author != null and author.trim() != ''">
-                and t.author like concat(#{author}, '%')
-            </if>
-            <if test="script != null and script.trim() != ''">
-                and t.script like concat(#{script}, '%')
+                and t.author like concat('%', #{author}, '%')
             </if>
             <if test="isAvailable != null">
                 and t.is_available = #{isAvailable}
             </if>
-            <if test="isDeleted != null">
-                and t.is_deleted = #{isDeleted}
-            </if>
             <if test="createTime != null">
                 and t.create_time >= #{createTime}
             </if>
-            <if test="updateTime != null">
-                and t.update_time >= #{updateTime}
-            </if>
         </where>
     </sql>
-
-    -->
 
 </mapper>

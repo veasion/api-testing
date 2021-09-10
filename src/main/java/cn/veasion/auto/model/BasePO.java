@@ -18,8 +18,8 @@ import java.util.Date;
 public class BasePO implements Serializable {
 
     private Integer id;
-    private Integer isAvailable;
-    private Integer isDeleted;
+    private Integer isAvailable = 1;
+    private Integer isDeleted = 0;
     private Date createTime;
     private Date updateTime;
 

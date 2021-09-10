@@ -46,6 +46,6 @@ public interface ApiRequestMapper {
     /**
      * 查询list
      */
-    List<ApiRequestPO> queryList();
+    List<ApiRequestPO> queryList(ApiRequestPO apiRequestPO);
 
 }

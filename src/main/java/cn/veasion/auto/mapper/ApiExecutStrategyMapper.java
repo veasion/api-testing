@@ -46,6 +46,6 @@ public interface ApiExecutStrategyMapper {
     /**
      * 查询list
      */
-    List<ApiExecutStrategyPO> queryList();
+    List<ApiExecutStrategyPO> queryList(ApiExecutStrategyPO apiExecutStrategyPO);
 
 }

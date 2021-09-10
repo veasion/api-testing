@@ -2,6 +2,9 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ProjectConfigPO;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
 import java.util.List;
 
 /**
@@ -47,5 +50,8 @@ public interface ProjectConfigMapper {
      * 查询list
      */
     List<ProjectConfigPO> queryList();
+
+    @Select("select * from project_config where project_id = #{projectId} and is_deleted = 0")
+    ProjectConfigPO queryByProjectId(@Param("projectId") Integer projectId);
 
 }

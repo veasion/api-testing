@@ -46,6 +46,6 @@ public interface ApiTestCaseMapper {
     /**
      * 查询list
      */
-    List<ApiTestCasePO> queryList();
+    List<ApiTestCasePO> queryList(ApiTestCasePO apiTestCasePO);
 
 }
