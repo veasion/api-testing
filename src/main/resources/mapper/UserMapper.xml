@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.veasion.auto.mapper.UserMapper">
+
+    <insert id="insert">
+        insert into user
+        (
+            username, password, role, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        (
+            #{username}, #{password}, #{role}, #{isAvailable}, 
+            #{isDeleted}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <insert id="insertAll">
+        insert into user
+        (
+            username, password, role, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+        (
+            #{obj.username}, #{obj.password}, #{obj.role}, #{obj.isAvailable}, 
+            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update user
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="role != null">
+                role = #{role},
+            </if>
+            <if test="isAvailable != null">
+                is_available = #{isAvailable},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateAll">
+        update user
+        <set>
+            username = #{username},
+            password = #{password},
+            role = #{role},
+            is_available = #{isAvailable},
+            is_deleted = #{isDeleted},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update user set is_deleted = 1 where id = #{value}
+    </update>
+
+    <select id="queryById" resultType="cn.veasion.auto.model.UserPO">
+        select * from user where id = #{value}
+    </select>
+
+    <select id="queryByUsername" resultType="cn.veasion.auto.model.UserPO">
+        select * from user where username = #{value} and is_available = 1 and is_deleted = 0
+    </select>
+
+    <select id="queryList" resultType="cn.veasion.auto.model.UserPO">
+        select * from user where is_deleted = 0
+    </select>
+
+    <!-- 分页查询代码 -->
+    <!--
+    <select id="queryListPage" resultType="cn.veasion.auto.model.UserPO">
+        select t.* from user t
+        <include refid="whereSQL" />
+        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1) from user t
+        <include refid="whereSQL" />
+    </select>
+
+    <sql id="whereSQL">
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="username != null and username.trim() != ''">
+                and t.username like concat(#{username}, '%')
+            </if>
+            <if test="password != null and password.trim() != ''">
+                and t.password like concat(#{password}, '%')
+            </if>
+            <if test="role != null and role.trim() != ''">
+                and t.role like concat(#{role}, '%')
+            </if>
+            <if test="isAvailable != null">
+                and t.is_available = #{isAvailable}
+            </if>
+            <if test="isDeleted != null">
+                and t.is_deleted = #{isDeleted}
+            </if>
+            <if test="createTime != null">
+                and t.create_time >= #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and t.update_time >= #{updateTime}
+            </if>
+        </where>
+    </sql>
+
+    -->
+
+</mapper>

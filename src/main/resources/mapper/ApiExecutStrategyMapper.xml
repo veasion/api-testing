@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.veasion.auto.mapper.ApiExecutStrategyMapper">
+
+    <insert id="insert">
+        insert into api_execut_strategy
+        (
+            project_id, `name`, `desc`, `type`,
+            strategy, job_cron, thread_count, thread_strategy_json, 
+            run_time, loop_count, script, start_time, 
+            end_time, status, is_available, is_deleted, 
+            create_time, update_time
+        )
+        values
+        (
+            #{projectId}, #{name}, #{desc}, #{type}, 
+            #{strategy}, #{jobCron}, #{threadCount}, #{threadStrategyJson}, 
+            #{runTime}, #{loopCount}, #{script}, #{startTime}, 
+            #{endTime}, #{status}, #{isAvailable}, #{isDeleted}, 
+            #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <insert id="insertAll">
+        insert into api_execut_strategy
+        (
+            project_id, `name`, `desc`, `type`,
+            strategy, job_cron, thread_count, thread_strategy_json, 
+            run_time, loop_count, script, start_time, 
+            end_time, status, is_available, is_deleted, 
+            create_time, update_time
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+        (
+            #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type}, 
+            #{obj.strategy}, #{obj.jobCron}, #{obj.threadCount}, #{obj.threadStrategyJson}, 
+            #{obj.runTime}, #{obj.loopCount}, #{obj.script}, #{obj.startTime}, 
+            #{obj.endTime}, #{obj.status}, #{obj.isAvailable}, #{obj.isDeleted}, 
+            #{obj.createTime}, #{obj.updateTime}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update api_execut_strategy
+        <set>
+            <if test="projectId != null">
+                project_id = #{projectId},
+            </if>
+            <if test="name != null">
+                `name` = #{name},
+            </if>
+            <if test="desc != null">
+                `desc` = #{desc},
+            </if>
+            <if test="type != null">
+                `type` = #{type},
+            </if>
+            <if test="strategy != null">
+                strategy = #{strategy},
+            </if>
+            <if test="jobCron != null">
+                job_cron = #{jobCron},
+            </if>
+            <if test="threadCount != null">
+                thread_count = #{threadCount},
+            </if>
+            <if test="threadStrategyJson != null">
+                thread_strategy_json = #{threadStrategyJson},
+            </if>
+            <if test="runTime != null">
+                run_time = #{runTime},
+            </if>
+            <if test="loopCount != null">
+                loop_count = #{loopCount},
+            </if>
+            <if test="script != null">
+                script = #{script},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="isAvailable != null">
+                is_available = #{isAvailable},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateAll">
+        update api_execut_strategy
+        <set>
+            project_id = #{projectId},
+            `name` = #{name},
+            `desc` = #{desc},
+            `type` = #{type},
+            strategy = #{strategy},
+            job_cron = #{jobCron},
+            thread_count = #{threadCount},
+            thread_strategy_json = #{threadStrategyJson},
+            run_time = #{runTime},
+            loop_count = #{loopCount},
+            script = #{script},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            status = #{status},
+            is_available = #{isAvailable},
+            is_deleted = #{isDeleted},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update api_execut_strategy set is_deleted = 1 where id = #{value}
+    </update>
+
+    <select id="queryById" resultType="cn.veasion.auto.model.ApiExecutStrategyPO">
+        select * from api_execut_strategy where id = #{value}
+    </select>
+
+    <select id="queryList" resultType="cn.veasion.auto.model.ApiExecutStrategyPO">
+        select * from api_execut_strategy
+    </select>
+
+    <!-- 分页查询代码 -->
+    <!--
+    <select id="queryListPage" resultType="cn.veasion.auto.model.ApiExecutStrategyPO">
+        select t.* from api_execut_strategy t
+        <include refid="whereSQL" />
+        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1) from api_execut_strategy t
+        <include refid="whereSQL" />
+    </select>
+
+    <sql id="whereSQL">
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="projectId != null">
+                and t.project_id = #{projectId}
+            </if>
+            <if test="name != null and name.trim() != ''">
+                and t.name like concat(#{name}, '%')
+            </if>
+            <if test="desc != null and desc.trim() != ''">
+                and t.desc like concat(#{desc}, '%')
+            </if>
+            <if test="type != null and type.trim() != ''">
+                and t.type like concat(#{type}, '%')
+            </if>
+            <if test="strategy != null and strategy.trim() != ''">
+                and t.strategy like concat(#{strategy}, '%')
+            </if>
+            <if test="jobCron != null and jobCron.trim() != ''">
+                and t.job_cron like concat(#{jobCron}, '%')
+            </if>
+            <if test="threadCount != null">
+                and t.thread_count = #{threadCount}
+            </if>
+            <if test="threadStrategyJson != null and threadStrategyJson.trim() != ''">
+                and t.thread_strategy_json like concat(#{threadStrategyJson}, '%')
+            </if>
+            <if test="runTime != null">
+                and t.run_time = #{runTime}
+            </if>
+            <if test="loopCount != null">
+                and t.loop_count = #{loopCount}
+            </if>
+            <if test="script != null and script.trim() != ''">
+                and t.script like concat(#{script}, '%')
+            </if>
+            <if test="startTime != null">
+                and t.start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and t.end_time >= #{endTime}
+            </if>
+            <if test="status != null">
+                and t.status = #{status}
+            </if>
+            <if test="isAvailable != null">
+                and t.is_available = #{isAvailable}
+            </if>
+            <if test="isDeleted != null">
+                and t.is_deleted = #{isDeleted}
+            </if>
+            <if test="createTime != null">
+                and t.create_time >= #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and t.update_time >= #{updateTime}
+            </if>
+        </where>
+    </sql>
+
+    -->
+
+</mapper>

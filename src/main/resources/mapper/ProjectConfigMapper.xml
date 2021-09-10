@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.veasion.auto.mapper.ProjectConfigMapper">
+
+    <insert id="insert">
+        insert into project_config
+        (
+            project_id, global_var_json, exception_script, before_script, 
+            do_script, after_script, notify_script, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        (
+            #{projectId}, #{globalVarJson}, #{exceptionScript}, #{beforeScript}, 
+            #{doScript}, #{afterScript}, #{notifyScript}, #{isAvailable}, 
+            #{isDeleted}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <insert id="insertAll">
+        insert into project_config
+        (
+            project_id, global_var_json, exception_script, before_script, 
+            do_script, after_script, notify_script, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+        (
+            #{obj.projectId}, #{obj.globalVarJson}, #{obj.exceptionScript}, #{obj.beforeScript}, 
+            #{obj.doScript}, #{obj.afterScript}, #{obj.notifyScript}, #{obj.isAvailable}, 
+            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update project_config
+        <set>
+            <if test="projectId != null">
+                project_id = #{projectId},
+            </if>
+            <if test="globalVarJson != null">
+                global_var_json = #{globalVarJson},
+            </if>
+            <if test="exceptionScript != null">
+                exception_script = #{exceptionScript},
+            </if>
+            <if test="beforeScript != null">
+                before_script = #{beforeScript},
+            </if>
+            <if test="doScript != null">
+                do_script = #{doScript},
+            </if>
+            <if test="afterScript != null">
+                after_script = #{afterScript},
+            </if>
+            <if test="notifyScript != null">
+                notify_script = #{notifyScript},
+            </if>
+            <if test="isAvailable != null">
+                is_available = #{isAvailable},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateAll">
+        update project_config
+        <set>
+            project_id = #{projectId},
+            global_var_json = #{globalVarJson},
+            exception_script = #{exceptionScript},
+            before_script = #{beforeScript},
+            do_script = #{doScript},
+            after_script = #{afterScript},
+            notify_script = #{notifyScript},
+            is_available = #{isAvailable},
+            is_deleted = #{isDeleted},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update project_config set is_deleted = 1 where id = #{value}
+    </update>
+
+    <select id="queryById" resultType="cn.veasion.auto.model.ProjectConfigPO">
+        select * from project_config where id = #{value}
+    </select>
+
+    <select id="queryList" resultType="cn.veasion.auto.model.ProjectConfigPO">
+        select * from project_config
+    </select>
+
+    <!-- 分页查询代码 -->
+    <!--
+    <select id="queryListPage" resultType="cn.veasion.auto.model.ProjectConfigPO">
+        select t.* from project_config t
+        <include refid="whereSQL" />
+        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1) from project_config t
+        <include refid="whereSQL" />
+    </select>
+
+    <sql id="whereSQL">
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="projectId != null">
+                and t.project_id = #{projectId}
+            </if>
+            <if test="globalVarJson != null and globalVarJson.trim() != ''">
+                and t.global_var_json like concat(#{globalVarJson}, '%')
+            </if>
+            <if test="exceptionScript != null and exceptionScript.trim() != ''">
+                and t.exception_script like concat(#{exceptionScript}, '%')
+            </if>
+            <if test="beforeScript != null and beforeScript.trim() != ''">
+                and t.before_script like concat(#{beforeScript}, '%')
+            </if>
+            <if test="doScript != null and doScript.trim() != ''">
+                and t.do_script like concat(#{doScript}, '%')
+            </if>
+            <if test="afterScript != null and afterScript.trim() != ''">
+                and t.after_script like concat(#{afterScript}, '%')
+            </if>
+            <if test="notifyScript != null and notifyScript.trim() != ''">
+                and t.notify_script like concat(#{notifyScript}, '%')
+            </if>
+            <if test="isAvailable != null">
+                and t.is_available = #{isAvailable}
+            </if>
+            <if test="isDeleted != null">
+                and t.is_deleted = #{isDeleted}
+            </if>
+            <if test="createTime != null">
+                and t.create_time >= #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and t.update_time >= #{updateTime}
+            </if>
+        </where>
+    </sql>
+
+    -->
+
+</mapper>

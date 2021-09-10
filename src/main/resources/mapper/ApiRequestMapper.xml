@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.veasion.auto.mapper.ApiRequestMapper">
+
+    <insert id="insert">
+        insert into api_request
+        (
+            project_id, api_name, api_desc, method, 
+            url, body, script, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        (
+            #{projectId}, #{apiName}, #{apiDesc}, #{method}, 
+            #{url}, #{body}, #{script}, #{isAvailable}, 
+            #{isDeleted}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <insert id="insertAll">
+        insert into api_request
+        (
+            project_id, api_name, api_desc, method, 
+            url, body, script, is_available, 
+            is_deleted, create_time, update_time
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+        (
+            #{obj.projectId}, #{obj.apiName}, #{obj.apiDesc}, #{obj.method}, 
+            #{obj.url}, #{obj.body}, #{obj.script}, #{obj.isAvailable}, 
+            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update api_request
+        <set>
+            <if test="projectId != null">
+                project_id = #{projectId},
+            </if>
+            <if test="apiName != null">
+                api_name = #{apiName},
+            </if>
+            <if test="apiDesc != null">
+                api_desc = #{apiDesc},
+            </if>
+            <if test="method != null">
+                method = #{method},
+            </if>
+            <if test="url != null">
+                url = #{url},
+            </if>
+            <if test="body != null">
+                body = #{body},
+            </if>
+            <if test="script != null">
+                script = #{script},
+            </if>
+            <if test="isAvailable != null">
+                is_available = #{isAvailable},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateAll">
+        update api_request
+        <set>
+            project_id = #{projectId},
+            api_name = #{apiName},
+            api_desc = #{apiDesc},
+            method = #{method},
+            url = #{url},
+            body = #{body},
+            script = #{script},
+            is_available = #{isAvailable},
+            is_deleted = #{isDeleted},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update api_request set is_deleted = 1 where id = #{value}
+    </update>
+
+    <select id="queryById" resultType="cn.veasion.auto.model.ApiRequestPO">
+        select * from api_request where id = #{value}
+    </select>
+
+    <select id="queryList" resultType="cn.veasion.auto.model.ApiRequestPO">
+        select * from api_request
+    </select>
+
+    <!-- 分页查询代码 -->
+    <!--
+    <select id="queryListPage" resultType="cn.veasion.auto.model.ApiRequestPO">
+        select t.* from api_request t
+        <include refid="whereSQL" />
+        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1) from api_request t
+        <include refid="whereSQL" />
+    </select>
+
+    <sql id="whereSQL">
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="projectId != null">
+                and t.project_id = #{projectId}
+            </if>
+            <if test="apiName != null and apiName.trim() != ''">
+                and t.api_name like concat(#{apiName}, '%')
+            </if>
+            <if test="apiDesc != null and apiDesc.trim() != ''">
+                and t.api_desc like concat(#{apiDesc}, '%')
+            </if>
+            <if test="method != null and method.trim() != ''">
+                and t.method like concat(#{method}, '%')
+            </if>
+            <if test="url != null and url.trim() != ''">
+                and t.url like concat(#{url}, '%')
+            </if>
+            <if test="body != null and body.trim() != ''">
+                and t.body like concat(#{body}, '%')
+            </if>
+            <if test="script != null and script.trim() != ''">
+                and t.script like concat(#{script}, '%')
+            </if>
+            <if test="isAvailable != null">
+                and t.is_available = #{isAvailable}
+            </if>
+            <if test="isDeleted != null">
+                and t.is_deleted = #{isDeleted}
+            </if>
+            <if test="createTime != null">
+                and t.create_time >= #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and t.update_time >= #{updateTime}
+            </if>
+        </where>
+    </sql>
+
+    -->
+
+</mapper>

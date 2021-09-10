@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.veasion.auto.mapper.StrategyCaseRelationMapper">
+
+    <insert id="insert">
+        insert into strategy_case_relation
+        (
+            execut_strategy_id, case_id, is_deleted, create_time, 
+            update_time
+        )
+        values
+        (
+            #{executStrategyId}, #{caseId}, #{isDeleted}, #{createTime}, 
+            #{updateTime}
+        )
+    </insert>
+
+    <insert id="insertAll">
+        insert into strategy_case_relation
+        (
+            execut_strategy_id, case_id, is_deleted, create_time, 
+            update_time
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+        (
+            #{obj.executStrategyId}, #{obj.caseId}, #{obj.isDeleted}, #{obj.createTime}, 
+            #{obj.updateTime}
+        )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update strategy_case_relation
+        <set>
+            <if test="executStrategyId != null">
+                execut_strategy_id = #{executStrategyId},
+            </if>
+            <if test="caseId != null">
+                case_id = #{caseId},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateAll">
+        update strategy_case_relation
+        <set>
+            execut_strategy_id = #{executStrategyId},
+            case_id = #{caseId},
+            is_deleted = #{isDeleted},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="deleteById">
+        update strategy_case_relation set is_deleted = 1 where id = #{value}
+    </update>
+
+    <select id="queryById" resultType="cn.veasion.auto.model.StrategyCaseRelationPO">
+        select * from strategy_case_relation where id = #{value}
+    </select>
+
+    <select id="queryList" resultType="cn.veasion.auto.model.StrategyCaseRelationPO">
+        select * from strategy_case_relation
+    </select>
+
+    <!-- 分页查询代码 -->
+    <!--
+    <select id="queryListPage" resultType="cn.veasion.auto.model.StrategyCaseRelationPO">
+        select t.* from strategy_case_relation t
+        <include refid="whereSQL" />
+        limit ${(pageIndex - 1) * pageSize}, #{pageSize}
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1) from strategy_case_relation t
+        <include refid="whereSQL" />
+    </select>
+
+    <sql id="whereSQL">
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="executStrategyId != null">
+                and t.execut_strategy_id = #{executStrategyId}
+            </if>
+            <if test="caseId != null">
+                and t.case_id = #{caseId}
+            </if>
+            <if test="isDeleted != null">
+                and t.is_deleted = #{isDeleted}
+            </if>
+            <if test="createTime != null">
+                and t.create_time >= #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and t.update_time >= #{updateTime}
+            </if>
+        </where>
+    </sql>
+
+    -->
+
+</mapper>
