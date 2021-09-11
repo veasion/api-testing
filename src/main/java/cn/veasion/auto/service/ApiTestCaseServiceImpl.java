@@ -32,11 +32,16 @@ public class ApiTestCaseServiceImpl implements ApiTestCaseService {
     }
 
     @Override
-    public void saveOrUpdateWithTx(ApiTestCasePO apiTestCasePO) {
+    public void saveOrUpdate(ApiTestCasePO apiTestCasePO) {
         if (apiTestCasePO.getId() == null) {
             apiTestCaseMapper.insert(apiTestCasePO);
         } else {
             apiTestCaseMapper.update(apiTestCasePO);
         }
+    }
+
+    @Override
+    public int delete(int id) {
+        return apiTestCaseMapper.deleteById(id);
     }
 }

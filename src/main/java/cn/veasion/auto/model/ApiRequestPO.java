@@ -1,6 +1,10 @@
 package cn.veasion.auto.model;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
+import org.springframework.util.StringUtils;
+
+import java.util.Map;
 
 /**
  * 请求接口
@@ -32,6 +36,10 @@ public class ApiRequestPO extends BasePO {
      */
     private String url;
     /**
+     * 请求头
+     */
+    private String headersJson;
+    /**
      * 请求body
      */
     private String body;
@@ -40,4 +48,10 @@ public class ApiRequestPO extends BasePO {
      */
     private String script;
 
+    public Map<String, Object> toHeaders() {
+        if (StringUtils.hasText(headersJson)) {
+            return JSON.parseObject(headersJson);
+        }
+        return null;
+    }
 }

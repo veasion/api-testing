@@ -5,14 +5,14 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into api_log
         (
-            project_id, execut_strategy_id, test_case_id, api_request_id, 
-            msg, status, time, is_available,
+            project_id, execute_strategy_id, test_case_id, api_request_id,
+            url, msg, status, `time`, exec_time, is_available,
             is_deleted, create_time, update_time
         )
         values
         (
-            #{projectId}, #{executStrategyId}, #{testCaseId}, #{apiRequestId}, 
-            #{msg}, #{status}, #{time}, #{isAvailable},
+            #{projectId}, #{executeStrategyId}, #{testCaseId}, #{apiRequestId},
+            #{url}, #{msg}, #{status}, #{time}, #{execTime}, #{isAvailable},
             #{isDeleted}, #{createTime}, #{updateTime}
         )
     </insert>
@@ -20,15 +20,15 @@
     <insert id="insertAll">
         insert into api_log
         (
-            project_id, execut_strategy_id, test_case_id, api_request_id, 
-            msg, status, time, is_available,
+            project_id, execute_strategy_id, test_case_id, api_request_id,
+            url, msg, status, `time`, exec_time, is_available,
             is_deleted, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.projectId}, #{obj.executStrategyId}, #{obj.testCaseId}, #{obj.apiRequestId}, 
-            #{obj.msg}, #{obj.status}, #{obj.time}, #{obj.isAvailable},
+            #{obj.projectId}, #{obj.executeStrategyId}, #{obj.testCaseId}, #{obj.apiRequestId},
+            #{obj.url}, #{obj.msg}, #{obj.status}, #{obj.time}, #{obj.execTime}, #{obj.isAvailable},
             #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
@@ -40,14 +40,17 @@
             <if test="projectId != null">
                 project_id = #{projectId},
             </if>
-            <if test="executStrategyId != null">
-                execut_strategy_id = #{executStrategyId},
+            <if test="executeStrategyId != null">
+                execute_strategy_id = #{executeStrategyId},
             </if>
             <if test="testCaseId != null">
                 test_case_id = #{testCaseId},
             </if>
             <if test="apiRequestId != null">
                 api_request_id = #{apiRequestId},
+            </if>
+            <if test="url != null">
+                url = #{url},
             </if>
             <if test="msg != null">
                 msg = #{msg},
@@ -56,7 +59,10 @@
                 status = #{status},
             </if>
             <if test="time != null">
-                time = #{time},
+                `time` = #{time},
+            </if>
+            <if test="execTime != null">
+                exec_time = #{execTime},
             </if>
             <if test="isAvailable != null">
                 is_available = #{isAvailable},
@@ -78,12 +84,14 @@
         update api_log
         <set>
             project_id = #{projectId},
-            execut_strategy_id = #{executStrategyId},
+            execute_strategy_id = #{executeStrategyId},
             test_case_id = #{testCaseId},
             api_request_id = #{apiRequestId},
+            url = #{url},
             msg = #{msg},
             status = #{status},
-            time = #{time},
+            `time` = #{time},
+            exec_time = #{execTime},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_time = #{createTime},
@@ -97,47 +105,91 @@
     </update>
 
     <select id="queryById" resultType="cn.veasion.auto.model.ApiLogPO">
-        select * from api_log where id = #{value}
+        select * from api_log t where id = #{value}
     </select>
 
     <select id="queryList" resultType="cn.veasion.auto.model.ApiLogPO">
-        select * from api_log where is_deleted = 0
+        select * from api_log t where is_deleted = 0
         <include refid="whereSQL" />
+        order by id desc
+    </select>
+
+    <select id="countStatus" resultType="hashmap">
+        select status, count(1) as count from api_log t
+        where is_deleted = 0
+        <include refid="whereSQL" />
+        group by status
+    </select>
+
+    <select id="groupStatusCount" resultType="hashmap">
+        select
+        DATE_FORMAT(create_time, '%Y-%m-%d') as date,
+        COUNT(IF(status = 1, 1, NULL)) as 'status1',
+        COUNT(IF(status = 2, 1, NULL)) as 'status2',
+        COUNT(IF(status = 3, 1, NULL)) as 'status3'
+        from api_log t
+        where is_deleted = 0
+        <include refid="whereSQL" />
+        group by DATE_FORMAT(create_time, '%Y-%m-%d')
+    </select>
+
+    <select id="listRanking" resultType="hashmap">
+        select api.*, t.url as 'reqUrl', t.time, t.exec_time, t.msg from api_request api, api_log t
+        where api.id = t.api_request_id and api.is_deleted = 0 and t.is_deleted = 0 and api.is_available = 1
+        <include refid="whereSQL" />
+        order by t.time desc limit 20
     </select>
 
     <sql id="whereSQL">
-        <where>
-            <if test="id != null">
-                and t.id = #{id}
-            </if>
-            <if test="projectId != null">
-                and t.project_id = #{projectId}
-            </if>
-            <if test="executStrategyId != null">
-                and t.execut_strategy_id = #{executStrategyId}
-            </if>
-            <if test="testCaseId != null">
-                and t.test_case_id = #{testCaseId}
-            </if>
-            <if test="apiRequestId != null">
-                and t.api_request_id = #{apiRequestId}
-            </if>
-            <if test="msg != null and msg.trim() != ''">
-                and t.msg like concat('%', #{msg}, '%')
-            </if>
-            <if test="status != null">
-                and t.status = #{status}
-            </if>
-            <if test="time != null">
-                and t.time >= #{time}
-            </if>
-            <if test="isAvailable != null">
-                and t.is_available = #{isAvailable}
-            </if>
-            <if test="createTime != null">
-                and t.create_time >= #{createTime}
-            </if>
-        </where>
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="projectId != null">
+            and t.project_id = #{projectId}
+        </if>
+        <if test="executeStrategyId != null">
+            and t.execute_strategy_id = #{executeStrategyId}
+        </if>
+        <if test="testCaseId != null">
+            and t.test_case_id = #{testCaseId}
+        </if>
+        <if test="apiRequestId != null">
+            and t.api_request_id = #{apiRequestId}
+        </if>
+        <if test="url != null and url.trim() != ''">
+            and t.url like concat('%', #{url}, '%')
+        </if>
+        <if test="msg != null and msg.trim() != ''">
+            and t.msg like concat('%', #{msg}, '%')
+        </if>
+        <if test="status != null">
+            and t.status = #{status}
+        </if>
+        <if test="statusList != null">
+            and t.status in
+            <foreach collection="statusList" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+        <if test="startTime != null">
+            and t.time >= #{time}
+        </if>
+        <if test="endTime != null">
+            and t.time &lt;= #{endTime}
+        </if>
+        <if test="startExecTime != null">
+            and t.exec_time >= #{startExecTime}
+        </if>
+        <if test="endExecTime != null">
+            and t.exec_time &lt;= #{endExecTime}
+        </if>
+        <if test="isAvailable != null">
+            and t.is_available = #{isAvailable}
+        </if>
+        <if test="startCreateDate != null">
+            and t.create_time >= #{startCreateDate}
+        </if>
+        <if test="endCreateTime != null">
+            and t.create_time &lt;= #{endCreateTime}
+        </if>
     </sql>
 
 </mapper>

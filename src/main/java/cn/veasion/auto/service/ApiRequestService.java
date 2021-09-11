@@ -13,7 +13,12 @@ public interface ApiRequestService {
 
     ApiRequestPO getById(int id);
 
+    ApiRequestPO queryByApiName(String apiName);
+
     Page<ApiRequestPO> listPage(ApiRequestPO apiRequestPO, int pageIndex, int pageSize);
 
-    void saveOrUpdateWithTx(ApiRequestPO apiRequestPO);
+    void saveOrUpdate(ApiRequestPO apiRequestPO);
+
+    int delete(int id);
+
 }

@@ -1,5 +1,6 @@
 package cn.veasion.auto.model;
 
+import cn.veasion.auto.utils.Constants;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +13,7 @@ public class JwtUser implements UserDetails {
     private Integer id;
     private String username;
     private String password;
+    private Integer isAvailable;
     private Collection<? extends GrantedAuthority> authorities;
 
     public JwtUser() {
@@ -21,6 +23,7 @@ public class JwtUser implements UserDetails {
         id = user.getId();
         username = user.getUsername();
         password = user.getPassword();
+        isAvailable = user.getIsAvailable();
         authorities = Collections.singleton(new SimpleGrantedAuthority(user.getRole()));
     }
 
@@ -46,7 +49,7 @@ public class JwtUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return isAvailable == null || Constants.YES.equals(isAvailable);
     }
 
     @Override

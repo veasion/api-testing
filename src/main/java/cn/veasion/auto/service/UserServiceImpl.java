@@ -38,15 +38,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveOrUpdateWithTx(UserPO userPO) {
-        UserPO u = userMapper.queryByUsername(userPO.getUsername(), userPO.getId());
-        if (u != null) {
-            throw new BusinessException("账号已存在");
+    public void saveOrUpdate(UserPO userPO) {
+        if (userPO.getUsername() != null) {
+            UserPO u = userMapper.queryByUsername(userPO.getUsername(), userPO.getId());
+            if (u != null) {
+                throw new BusinessException("账号已存在");
+            }
         }
         if (userPO.getId() == null) {
             userMapper.insert(userPO);
         } else {
             userMapper.update(userPO);
         }
+    }
+
+    @Override
+    public int delete(int id) {
+        return userMapper.deleteById(id);
     }
 }

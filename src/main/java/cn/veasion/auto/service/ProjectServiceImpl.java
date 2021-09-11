@@ -40,7 +40,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void saveOrUpdateWithTx(ProjectPO projectPO) {
+    public void saveOrUpdate(ProjectPO projectPO) {
         if (projectPO.getId() == null) {
             projectMapper.insert(projectPO);
         } else {
@@ -55,5 +55,14 @@ public class ProjectServiceImpl implements ProjectService {
                 projectConfigMapper.update(projectConfig);
             }
         }
+    }
+
+    @Override
+    public int delete(int id) {
+        ProjectConfigPO projectConfigPO = projectConfigMapper.queryByProjectId(id);
+        if (projectConfigPO != null) {
+            projectConfigMapper.deleteById(projectConfigPO.getId());
+        }
+        return projectMapper.deleteById(id);
     }
 }

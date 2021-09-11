@@ -6,13 +6,13 @@
         insert into api_request
         (
             project_id, api_name, api_desc, method, 
-            url, body, script, is_available, 
+            url, body, script, is_available, headers_json,
             is_deleted, create_time, update_time
         )
         values
         (
             #{projectId}, #{apiName}, #{apiDesc}, #{method}, 
-            #{url}, #{body}, #{script}, #{isAvailable}, 
+            #{url}, #{body}, #{script}, #{isAvailable}, #{headersJson},
             #{isDeleted}, #{createTime}, #{updateTime}
         )
     </insert>
@@ -21,14 +21,14 @@
         insert into api_request
         (
             project_id, api_name, api_desc, method, 
-            url, body, script, is_available, 
+            url, body, script, is_available, headers_json,
             is_deleted, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.projectId}, #{obj.apiName}, #{obj.apiDesc}, #{obj.method}, 
-            #{obj.url}, #{obj.body}, #{obj.script}, #{obj.isAvailable}, 
+            #{obj.url}, #{obj.body}, #{obj.script}, #{obj.isAvailable}, #{obj.headersJson},
             #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
@@ -51,6 +51,9 @@
             </if>
             <if test="url != null">
                 url = #{url},
+            </if>
+            <if test="headersJson != null">
+                headers_json = #{headersJson},
             </if>
             <if test="body != null">
                 body = #{body},
@@ -82,6 +85,7 @@
             api_desc = #{apiDesc},
             method = #{method},
             url = #{url},
+            headers_json = #{headersJson},
             body = #{body},
             script = #{script},
             is_available = #{isAvailable},
@@ -97,38 +101,44 @@
     </update>
 
     <select id="queryById" resultType="cn.veasion.auto.model.ApiRequestPO">
-        select * from api_request where id = #{value}
+        select * from api_request t where id = #{value}
+    </select>
+
+    <select id="queryByApiName" resultType="cn.veasion.auto.model.ApiRequestPO">
+        select * from api_request t where api_name = #{apiName} and is_deleted = 0
+        <if test="notEqId != null">
+            and id &lt;&gt; #{notEqId}
+        </if>
     </select>
 
     <select id="queryList" resultType="cn.veasion.auto.model.ApiRequestPO">
-        select * from api_request where is_deleted = 0
+        select * from api_request t where is_deleted = 0
         <include refid="whereSQL" />
+        order by id desc
     </select>
 
     <sql id="whereSQL">
-        <where>
-            <if test="id != null">
-                and t.id = #{id}
-            </if>
-            <if test="projectId != null">
-                and t.project_id = #{projectId}
-            </if>
-            <if test="apiName != null and apiName.trim() != ''">
-                and t.api_name like concat('%', #{apiName}, '%')
-            </if>
-            <if test="method != null and method.trim() != ''">
-                and t.method = #{method}
-            </if>
-            <if test="url != null and url.trim() != ''">
-                and t.url like concat('%', #{url}, '%')
-            </if>
-            <if test="isAvailable != null">
-                and t.is_available = #{isAvailable}
-            </if>
-            <if test="createTime != null">
-                and t.create_time >= #{createTime}
-            </if>
-        </where>
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="projectId != null">
+            and t.project_id = #{projectId}
+        </if>
+        <if test="apiName != null and apiName.trim() != ''">
+            and t.api_name like concat('%', #{apiName}, '%')
+        </if>
+        <if test="method != null and method.trim() != ''">
+            and t.method = #{method}
+        </if>
+        <if test="url != null and url.trim() != ''">
+            and t.url like concat('%', #{url}, '%')
+        </if>
+        <if test="isAvailable != null">
+            and t.is_available = #{isAvailable}
+        </if>
+        <if test="createTime != null">
+            and t.create_time >= #{createTime}
+        </if>
     </sql>
 
 </mapper>

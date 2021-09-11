@@ -1,5 +1,7 @@
 package cn.veasion.auto.config;
 
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.support.DefaultBeanFactoryPointcutAdvisor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.TransactionDefinition;
@@ -12,7 +14,6 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DaoConfig
@@ -23,16 +24,36 @@ import java.util.Map;
 @Configuration
 public class DaoConfig {
 
+    private static final String TX_EXPRESSION = "execution(* cn.veasion.auto.service..*.*(..))";
+
     @Bean
-    public TransactionInterceptor txAdvice(TransactionManager transactionManager) {
+    public DefaultBeanFactoryPointcutAdvisor defaultBeanFactoryPointcutAdvisor(TransactionManager transactionManager) {
+        DefaultBeanFactoryPointcutAdvisor advisor = new DefaultBeanFactoryPointcutAdvisor();
+
         NameMatchTransactionAttributeSource source = new NameMatchTransactionAttributeSource();
         RuleBasedTransactionAttribute requiredTx = new RuleBasedTransactionAttribute();
         requiredTx.setRollbackRules(Collections.singletonList(new RollbackRuleAttribute(Throwable.class)));
         requiredTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        Map<String, TransactionAttribute> txMap = new HashMap<>();
-        txMap.put("*WithTx", requiredTx);
-        source.setNameMap(txMap);
-        return new TransactionInterceptor(transactionManager, source);
+
+        source.setNameMap(new HashMap<String, TransactionAttribute>() {{
+            put("save*", requiredTx);
+            put("update*", requiredTx);
+            put("insert*", requiredTx);
+            put("delete*", requiredTx);
+            put("*WithTx", requiredTx);
+        }});
+
+        TransactionInterceptor interceptor = new TransactionInterceptor();
+        interceptor.setTransactionManager(transactionManager);
+        interceptor.setTransactionAttributeSource(source);
+
+        advisor.setAdvice(interceptor);
+
+        AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+        pointcut.setExpression(TX_EXPRESSION);
+        advisor.setPointcut(pointcut);
+
+        return advisor;
     }
 
 }

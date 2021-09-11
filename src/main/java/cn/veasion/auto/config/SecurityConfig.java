@@ -49,8 +49,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/static/**", "/index.html", "/chk.html", "/favicon.ico", "/avatar.jpg").permitAll()
-                .antMatchers("/doc.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs").anonymous()
+                .antMatchers("/", "/public/**").permitAll()
+                .antMatchers("/index.html", "/chk.html", "/favicon.ico", "/avatar.jpg", "/static/**").permitAll()
+                .antMatchers("/doc.html", "/*/api-docs", "/swagger-resources/**", "/webjars/**").anonymous()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))

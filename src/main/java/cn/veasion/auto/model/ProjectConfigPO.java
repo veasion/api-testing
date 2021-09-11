@@ -1,6 +1,8 @@
 package cn.veasion.auto.model;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 /**
  * 全局配置
@@ -20,24 +22,22 @@ public class ProjectConfigPO extends BasePO {
      */
     private String globalVarJson;
     /**
-     * 脚本: 异常监听
+     * 脚本: 策略异常执行
      */
     private String exceptionScript;
     /**
-     * 脚本: 请求前
+     * 脚本: 策略执行前
      */
     private String beforeScript;
     /**
-     * 脚本: 请求中
-     */
-    private String doScript;
-    /**
-     * 脚本: 请求后
+     * 脚本: 策略执行后
      */
     private String afterScript;
-    /**
-     * 脚本：通知
-     */
-    private String notifyScript;
 
+    public JSONObject toGlobalVarJson() {
+        if (StringUtils.hasText(globalVarJson)) {
+            return JSONObject.parseObject(globalVarJson);
+        }
+        return null;
+    }
 }

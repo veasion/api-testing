@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public class HttpClientUtils {
 
-    private static final String CHARSET_DEFAULT = "UTF-8";
+    public static final String CHARSET_DEFAULT = "UTF-8";
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
 
     static {
@@ -68,6 +68,22 @@ public class HttpClientUtils {
      * @param charset     编码，默认UTF-8
      */
     public static String post(String url, String body, String contentType, String charset) throws IOException {
+        return post(url, body, contentType, charset, null);
+    }
+
+    /**
+     * POST
+     *
+     * @param url
+     * @param body
+     * @param contentType 例如application/xml，application/x-www-form-urlencoded，application/json，text/html
+     * @param charset     编码，默认UTF-8
+     * @param headers
+     */
+    public static String post(String url, String body, String contentType, String charset, Map<String, String> headers) throws IOException {
+        if (contentType == null && headers != null) {
+            contentType = headers.get("Content-Type");
+        }
         HttpPost post = new HttpPost(url);
         if (charset == null) {
             charset = CHARSET_DEFAULT;
@@ -77,6 +93,11 @@ public class HttpClientUtils {
                 post.setEntity(new StringEntity(body, ContentType.create(contentType, charset)));
             } else {
                 post.setEntity(new StringEntity(body, charset));
+            }
+        }
+        if (headers != null && !headers.isEmpty()) {
+            for (Entry<String, String> entry : headers.entrySet()) {
+                post.addHeader(entry.getKey(), entry.getValue());
             }
         }
         HttpClient client = getHttpClient(url, post);
@@ -115,15 +136,27 @@ public class HttpClientUtils {
     /**
      * get请求
      */
-    public static String get(String url, String charset) throws IOException {
-        return IOUtils.toString(get(url), charset != null ? charset : CHARSET_DEFAULT);
+    public static byte[] get(String url) throws IOException {
+        return get(url, (Map<String, String>) null);
     }
 
     /**
      * get请求
      */
-    public static byte[] get(String url) throws IOException {
+    public static String get(String url, String charset) throws IOException {
+        return IOUtils.toString(get(url, (Map<String, String>) null), charset != null ? charset : CHARSET_DEFAULT);
+    }
+
+    /**
+     * get请求
+     */
+    public static byte[] get(String url, Map<String, String> headers) throws IOException {
         HttpGet get = new HttpGet(url);
+        if (headers != null && !headers.isEmpty()) {
+            for (Entry<String, String> entry : headers.entrySet()) {
+                get.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
         HttpClient client = getHttpClient(url, get);
         HttpResponse res = client.execute(get);
         return IOUtils.toByteArray(res.getEntity().getContent());

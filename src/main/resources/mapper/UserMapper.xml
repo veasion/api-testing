@@ -95,23 +95,22 @@
     <select id="queryList" resultType="cn.veasion.auto.model.UserPO">
         select * from user where is_deleted = 0
         <include refid="whereSQL" />
+        order by id desc
     </select>
 
     <sql id="whereSQL">
-        <where>
-            <if test="id != null">
-                and t.id = #{id}
-            </if>
-            <if test="username != null and username.trim() != ''">
-                and t.username like concat('%', #{username}, '%')
-            </if>
-            <if test="isAvailable != null">
-                and t.is_available = #{isAvailable}
-            </if>
-            <if test="createTime != null">
-                and t.create_time >= #{createTime}
-            </if>
-        </where>
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="username != null and username.trim() != ''">
+            and t.username like concat('%', #{username}, '%')
+        </if>
+        <if test="isAvailable != null">
+            and t.is_available = #{isAvailable}
+        </if>
+        <if test="createTime != null">
+            and t.create_time >= #{createTime}
+        </if>
     </sql>
 
 </mapper>

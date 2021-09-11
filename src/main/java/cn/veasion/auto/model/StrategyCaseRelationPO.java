@@ -14,7 +14,7 @@ public class StrategyCaseRelationPO extends BasePO {
     /**
      * 策略id
      */
-    private Integer executStrategyId;
+    private Integer executeStrategyId;
     /**
      * 用例id
      */

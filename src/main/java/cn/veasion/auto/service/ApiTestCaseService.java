@@ -15,6 +15,8 @@ public interface ApiTestCaseService {
 
     Page<ApiTestCasePO> listPage(ApiTestCasePO apiTestCasePO, int pageIndex, int pageSize);
 
-    void saveOrUpdateWithTx(ApiTestCasePO apiTestCasePO);
+    void saveOrUpdate(ApiTestCasePO apiTestCasePO);
+
+    int delete(int id);
 
 }

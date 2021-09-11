@@ -1,16 +1,20 @@
 package cn.veasion.auto.controller;
 
+import cn.veasion.auto.model.ApiLogPO;
+import cn.veasion.auto.model.ApiLogVO;
 import cn.veasion.auto.model.R;
+import cn.veasion.auto.service.ApiLogService;
+import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,26 +30,54 @@ import java.util.Map;
 @RequestMapping("/api")
 public class IndexController {
 
-    @GetMapping("/index")
-    public R<Map<String, Object>> index() {
-        Map<String, Object> dashboardMap = new HashMap<>();
-        dashboardMap.put("jobInfoCount", 0); // 全部执行器数量
-        dashboardMap.put("jobLogCount", 0); // 成功数量 + 失败数量 + 执行中数量
-        dashboardMap.put("jobLogSuccessCount", 0); // 成功数量
-        dashboardMap.put("executorCount", 0); // 执行器数量
-        return R.ok(dashboardMap);
+    @Resource
+    private ApiLogService apiLogService;
+
+    @RequestMapping("/listRanking")
+    public R<Object> listRanking(ApiLogVO apiLog) {
+        return R.ok(apiLogService.listRanking(apiLog));
     }
 
-    @PostMapping("/chartInfo")
+    @RequestMapping("/chartInfo")
     public R<Map<String, Object>> chartInfo() {
-        List<String> triggerDayList = new ArrayList<>(); // 7天: ["2021-09-04", "2021-09-05", ...]
-        List<Integer> triggerDayCountSucList = new ArrayList<>(); // 7天: 成功数量
-        List<Integer> triggerDayCountFailList = new ArrayList<>(); // 7天: 失败数量
-        List<Integer> triggerDayCountRunningList = new ArrayList<>(); // 7天: 执行中数量
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -7);
+        ApiLogVO apiLog = new ApiLogVO();
+        apiLog.setStartCreateDate(DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd 00:00:00"));
+        apiLog.setEndCreateTime(DateUtils.formatDate(new Date(), "yyyy-MM-dd 59:59:59"));
+        List<Map<String, Object>> mapList = apiLogService.groupStatusCount(apiLog);
+        Map<String, Map<String, Object>> dayMap = new HashMap<>(mapList.size());
+        for (Map<String, Object> map : mapList) {
+            dayMap.put(String.valueOf(map.get("date")), map);
+        }
 
-        int triggerCountSucTotal = 0; // 成功数量
-        int triggerCountFailTotal = 0; // 失败数量
-        int triggerCountRunningTotal = 0; // 执行中数量
+        List<String> triggerDayList = new ArrayList<>();
+        List<Number> triggerDayCountSucList = new ArrayList<>();
+        List<Number> triggerDayCountFailList = new ArrayList<>();
+        List<Number> triggerDayCountRunningList = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) {
+            calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_MONTH, i);
+            String date = DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd");
+            triggerDayList.add(date);
+            Map<String, Object> dayCountMap = dayMap.get(date);
+            if (dayCountMap == null) {
+                triggerDayCountSucList.add(0);
+                triggerDayCountFailList.add(0);
+                triggerDayCountRunningList.add(0);
+            } else {
+                triggerDayCountSucList.add((Number) dayCountMap.getOrDefault("status2", 0));
+                triggerDayCountFailList.add((Number) dayCountMap.getOrDefault("status3", 0));
+                triggerDayCountRunningList.add((Number) dayCountMap.getOrDefault("status1", 0));
+            }
+        }
+
+        List<Map<String, Object>> countStatusList = apiLogService.countStatus(null);
+        Map<Number, Number> statusMap = new HashMap<>();
+        for (Map<String, Object> map : countStatusList) {
+            statusMap.put((Number) map.get("status"), (Number) map.get("count"));
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("triggerDayList", triggerDayList);
@@ -53,9 +85,9 @@ public class IndexController {
         result.put("triggerDayCountFailList", triggerDayCountFailList);
         result.put("triggerDayCountRunningList", triggerDayCountRunningList);
 
-        result.put("triggerCountSucTotal", triggerCountSucTotal);
-        result.put("triggerCountFailTotal", triggerCountFailTotal);
-        result.put("triggerCountRunningTotal", triggerCountRunningTotal);
+        result.put("triggerCountSucTotal", statusMap.getOrDefault(ApiLogPO.STATUS_SUC, 0));
+        result.put("triggerCountFailTotal", statusMap.getOrDefault(ApiLogPO.STATUS_FAIL, 0));
+        result.put("triggerCountRunningTotal", statusMap.getOrDefault(ApiLogPO.STATUS_RUNNING, 0));
         return R.ok(result);
     }
 

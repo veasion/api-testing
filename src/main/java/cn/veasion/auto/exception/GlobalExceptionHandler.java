@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public R handleException(Exception e) {
+    public R<Object> handleException(Exception e) {
         log.error("系统异常", e);
-        return R.error(e.getMessage());
+        if (e instanceof BusinessException) {
+            return R.error(e.getMessage());
+        } else {
+            return R.error("系统异常: " + e.getMessage());
+        }
     }
 
 }

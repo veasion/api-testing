@@ -1,57 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC " -//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.veasion.auto.mapper.ApiExecutStrategyMapper">
+<mapper namespace="cn.veasion.auto.mapper.ApiExecuteStrategyMapper">
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into api_execut_strategy
+        insert into api_execute_strategy
         (
-            project_id, name, desc, type, 
-            strategy, job_cron, thread_count, thread_strategy_json, 
-            script, start_time, end_time, status, 
+            project_id, `name`, `desc`, `type`, script,
+            strategy, job_cron, thread_count, thread_strategy_json,
             is_available, is_deleted, create_time, update_time
         )
         values
         (
-            #{projectId}, #{name}, #{desc}, #{type}, 
-            #{strategy}, #{jobCron}, #{threadCount}, #{threadStrategyJson}, 
-            #{script}, #{startTime}, #{endTime}, #{status}, 
+            #{projectId}, #{name}, #{desc}, #{type}, #{script},
+            #{strategy}, #{jobCron}, #{threadCount}, #{threadStrategyJson},
             #{isAvailable}, #{isDeleted}, #{createTime}, #{updateTime}
         )
     </insert>
 
     <insert id="insertAll">
-        insert into api_execut_strategy
+        insert into api_execute_strategy
         (
-        project_id, name, desc, type,
+        project_id, `name`, `desc`, `type`, script,
         strategy, job_cron, thread_count, thread_strategy_json,
-        script, start_time, end_time, status,
         is_available, is_deleted, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
             (
-            #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type},
+            #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type}, #{obj.script},
             #{obj.strategy}, #{obj.jobCron}, #{obj.threadCount}, #{obj.threadStrategyJson},
-            #{obj.script}, #{obj.startTime}, #{obj.endTime}, #{obj.status},
             #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
             )
         </foreach>
     </insert>
 
     <update id="update">
-        update api_execut_strategy
+        update api_execute_strategy
         <set>
             <if test="projectId != null">
                 project_id = #{projectId},
             </if>
             <if test="name != null">
-                name = #{name},
+                `name` = #{name},
             </if>
             <if test="desc != null">
-                desc = #{desc},
+                `desc` = #{desc},
             </if>
             <if test="type != null">
-                type = #{type},
+                `type` = #{type},
             </if>
             <if test="strategy != null">
                 strategy = #{strategy},
@@ -67,15 +63,6 @@
             </if>
             <if test="script != null">
                 script = #{script},
-            </if>
-            <if test="startTime != null">
-                start_time = #{startTime},
-            </if>
-            <if test="endTime != null">
-                end_time = #{endTime},
-            </if>
-            <if test="status != null">
-                status = #{status},
             </if>
             <if test="isAvailable != null">
                 is_available = #{isAvailable},
@@ -94,20 +81,17 @@
     </update>
 
     <update id="updateAll">
-        update api_execut_strategy
+        update api_execute_strategy
         <set>
             project_id = #{projectId},
-            name = #{name},
-            desc = #{desc},
-            type = #{type},
+            `name` = #{name},
+            `desc` = #{desc},
+            `type` = #{type},
             strategy = #{strategy},
             job_cron = #{jobCron},
             thread_count = #{threadCount},
             thread_strategy_json = #{threadStrategyJson},
             script = #{script},
-            start_time = #{startTime},
-            end_time = #{endTime},
-            status = #{status},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_time = #{createTime},
@@ -117,51 +101,50 @@
     </update>
     
     <update id="deleteById">
-        update api_execut_strategy set is_deleted = 1 where id = #{value}
+        update api_execute_strategy set is_deleted = 1 where id = #{value}
     </update>
 
-    <select id="queryById" resultType="cn.veasion.auto.model.ApiExecutStrategyPO">
-        select * from api_execut_strategy where id = #{value}
+    <select id="queryById" resultType="cn.veasion.auto.model.ApiExecuteStrategyPO">
+        select * from api_execute_strategy t where id = #{value}
     </select>
 
-    <select id="queryList" resultType="cn.veasion.auto.model.ApiExecutStrategyPO">
-        select * from api_execut_strategy where is_deleted = 0
+    <select id="queryList" resultType="cn.veasion.auto.model.ApiExecuteStrategyPO">
+        select * from api_execute_strategy t where is_deleted = 0
         <include refid="whereSQL" />
+        order by id desc
     </select>
 
     <sql id="whereSQL">
-        <where>
-            <if test="id != null">
-                and t.id = #{id}
-            </if>
-            <if test="projectId != null">
-                and t.project_id = #{projectId}
-            </if>
-            <if test="name != null and name.trim() != ''">
-                and t.name like concat('%', #{name}, '%')
-            </if>
-            <if test="type != null">
-                and t.type = #{type}
-            </if>
-            <if test="strategy != null">
-                and t.strategy = #{strategy}
-            </if>
-            <if test="startTime != null">
-                and t.start_time >= #{startTime}
-            </if>
-            <if test="endTime != null">
-                and t.end_time &lt;= #{endTime}
-            </if>
-            <if test="status != null">
-                and t.status = #{status}
-            </if>
-            <if test="isAvailable != null">
-                and t.is_available = #{isAvailable}
-            </if>
-            <if test="createTime != null">
-                and t.create_time >= #{createTime}
-            </if>
-        </where>
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="projectId != null">
+            and t.project_id = #{projectId}
+        </if>
+        <if test="name != null and name.trim() != ''">
+            and t.name like concat('%', #{name}, '%')
+        </if>
+        <if test="desc != null and desc.trim() != ''">
+            and t.`desc` like concat('%', #{desc}, '%')
+        </if>
+        <if test="type != null">
+            and t.type = #{type}
+        </if>
+        <if test="jobCron != null and jobCron.trim() != ''">
+            and t.job_cron like concat('%', #{jobCron}, '%')
+        </if>
+        <if test="strategy != null">
+            and t.strategy = #{strategy}
+        </if>
+        <if test="script != null and script.trim() != ''">
+            and t.script like concat('%', #{script}, '%')
+        </if>
+        <if test="isAvailable != null">
+            and t.is_available = #{isAvailable}
+        </if>
+        <if test="createTime != null">
+            and t.create_time >= #{createTime}
+        </if>
     </sql>
 
 </mapper>

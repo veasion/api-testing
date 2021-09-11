@@ -49,11 +49,11 @@ public interface StrategyCaseRelationMapper {
     /**
      * 查询list
      */
-    List<ApiTestCasePO> queryList(Integer executStrategyId);
+    List<ApiTestCasePO> queryApiTestCaseList(Integer executeStrategyId);
 
     /**
      * 删除
      */
-    int delete(@Param("executStrategyId") int executStrategyId, @Param("caseIds") List<Integer> caseIds);
+    int delete(@Param("executeStrategyId") int executeStrategyId, @Param("caseIds") List<Integer> caseIds);
 
 }

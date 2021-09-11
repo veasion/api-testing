@@ -11,6 +11,10 @@ import lombok.Data;
 @Data
 public class ApiLogPO extends BasePO {
 
+    public static final Integer STATUS_RUNNING = 1;
+    public static final Integer STATUS_SUC = 2;
+    public static final Integer STATUS_FAIL = 3;
+
     /**
      * 项目id
      */
@@ -18,7 +22,7 @@ public class ApiLogPO extends BasePO {
     /**
      * 策略id
      */
-    private Integer executStrategyId;
+    private Integer executeStrategyId;
     /**
      * 用例id
      */
@@ -28,9 +32,13 @@ public class ApiLogPO extends BasePO {
      */
     private Integer apiRequestId;
     /**
+     * 请求url
+     */
+    private String url;
+    /**
      * 日志
      */
-    private String message;
+    private String msg;
     /**
      * 运行状态: 1 执行中 2 执行成功 3 执行失败
      */
@@ -39,5 +47,9 @@ public class ApiLogPO extends BasePO {
      * 请求接口耗时(ms)
      */
     private Integer time;
+    /**
+     * 执行任务耗时(ms)
+     */
+    private Integer execTime;
 
 }

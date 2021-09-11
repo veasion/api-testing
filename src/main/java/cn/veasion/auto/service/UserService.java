@@ -17,6 +17,8 @@ public interface UserService {
 
     Page<UserPO> listPage(UserPO userPO, int pageIndex, int pageSize);
 
-    void saveOrUpdateWithTx(UserPO userPO);
+    void saveOrUpdate(UserPO userPO);
 
+    int delete(int id);
+    
 }

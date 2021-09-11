@@ -77,29 +77,28 @@
     </update>
 
     <select id="queryById" resultType="cn.veasion.auto.model.ProjectPO">
-        select * from project where id = #{value}
+        select * from project t where id = #{value}
     </select>
 
     <select id="queryList" resultType="cn.veasion.auto.model.ProjectPO">
-        select * from project where is_deleted = 0
+        select * from project t where is_deleted = 0
         <include refid="whereSQL" />
+        order by id desc
     </select>
 
     <sql id="whereSQL">
-        <where>
-            <if test="id != null">
-                and t.id = #{id}
-            </if>
-            <if test="name != null and name.trim() != ''">
-                and t.name like concat('%', #{name}, '%')
-            </if>
-            <if test="isAvailable != null">
-                and t.is_available = #{isAvailable}
-            </if>
-            <if test="createTime != null">
-                and t.create_time >= #{createTime}
-            </if>
-        </where>
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="name != null and name.trim() != ''">
+            and t.name like concat('%', #{name}, '%')
+        </if>
+        <if test="isAvailable != null">
+            and t.is_available = #{isAvailable}
+        </if>
+        <if test="createTime != null">
+            and t.create_time >= #{createTime}
+        </if>
     </sql>
 
 </mapper>

@@ -41,8 +41,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             LoginUser loginUser = new ObjectMapper().readValue(request.getInputStream(), LoginUser.class);
             rememberMe.set(loginUser.getRememberMe());
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUser.getUsername(), loginUser.getPassword(), new ArrayList<>())
-            );
+            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUser.getUsername(), loginUser.getPassword(), new ArrayList<>()));
         } catch (IOException e) {
             logger.error("登录认证异常", e);
             return null;
@@ -56,7 +55,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication authResult) throws IOException {
 
         JwtUser jwtUser = (JwtUser) authResult.getPrincipal();
-        boolean isRemember = rememberMe.get() == 1;
+        boolean isRemember = Constants.YES.equals(rememberMe.get());
         String role = "";
         Collection<? extends GrantedAuthority> authorities = jwtUser.getAuthorities();
         for (GrantedAuthority authority : authorities) {

@@ -5,12 +5,12 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into strategy_case_relation
         (
-            execut_strategy_id, case_id, is_deleted, create_time, 
+            execute_strategy_id, case_id, is_deleted, create_time,
             update_time
         )
         values
         (
-            #{executStrategyId}, #{caseId}, #{isDeleted}, #{createTime}, 
+            #{executeStrategyId}, #{caseId}, #{isDeleted}, #{createTime},
             #{updateTime}
         )
     </insert>
@@ -18,13 +18,13 @@
     <insert id="insertAll">
         insert into strategy_case_relation
         (
-            execut_strategy_id, case_id, is_deleted, create_time, 
+            execute_strategy_id, case_id, is_deleted, create_time,
             update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.executStrategyId}, #{obj.caseId}, #{obj.isDeleted}, #{obj.createTime}, 
+            #{obj.executeStrategyId}, #{obj.caseId}, #{obj.isDeleted}, #{obj.createTime},
             #{obj.updateTime}
         )
         </foreach>
@@ -33,8 +33,8 @@
     <update id="update">
         update strategy_case_relation
         <set>
-            <if test="executStrategyId != null">
-                execut_strategy_id = #{executStrategyId},
+            <if test="executeStrategyId != null">
+                execute_strategy_id = #{executeStrategyId},
             </if>
             <if test="caseId != null">
                 case_id = #{caseId},
@@ -55,7 +55,7 @@
     <update id="updateAll">
         update strategy_case_relation
         <set>
-            execut_strategy_id = #{executStrategyId},
+            execute_strategy_id = #{executeStrategyId},
             case_id = #{caseId},
             is_deleted = #{isDeleted},
             create_time = #{createTime},
@@ -72,13 +72,13 @@
         select * from strategy_case_relation where id = #{value}
     </select>
 
-    <select id="queryList" resultType="cn.veasion.auto.model.ApiTestCasePO">
+    <select id="queryApiTestCaseList" resultType="cn.veasion.auto.model.ApiTestCasePO">
         select atc.* from api_test_case atc, strategy_case_relation scr
-        where atc.is_deleted = 0 and scr.is_deleted = 0 and scr.case_id = atc.id and scr.execut_strategy_id = #{value}
+        where atc.is_deleted = 0 and scr.is_deleted = 0 and scr.case_id = atc.id and scr.execute_strategy_id = #{value}
     </select>
 
     <update id="delete">
-        update strategy_case_relation set is_deleted = 1 where execut_strategy_id = #{executStrategyId}
+        update strategy_case_relation set is_deleted = 1 where execute_strategy_id = #{executeStrategyId}
         <if test="caseIds != null">
             and case_id in
             <foreach collection="caseIds" open="(" separator="," close=")" item="caseId">

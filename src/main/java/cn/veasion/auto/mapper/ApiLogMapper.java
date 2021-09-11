@@ -1,8 +1,11 @@
 package cn.veasion.auto.mapper;
 
+import cn.veasion.auto.model.ApiLogVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiLogPO;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * 日志
@@ -46,6 +49,21 @@ public interface ApiLogMapper {
     /**
      * 查询list
      */
-    List<ApiLogPO> queryList(ApiLogPO apiLogPO);
+    List<ApiLogPO> queryList(ApiLogVO apiLog);
+
+    /**
+     * 统计各状态数量
+     */
+    List<Map<String, Object>> countStatus(ApiLogVO apiLog);
+
+    /**
+     * 按天统计各状态数量
+     */
+    List<Map<String, Object>> groupStatusCount(ApiLogVO apiLog);
+
+    /**
+     * 接口耗时排行榜
+     */
+    List<Map<String, Object>> listRanking(ApiLogVO apiLog);
 
 }

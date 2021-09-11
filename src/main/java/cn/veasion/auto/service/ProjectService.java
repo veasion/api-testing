@@ -15,6 +15,8 @@ public interface ProjectService {
 
     Page<ProjectPO> listPage(ProjectPO projectPO, int pageIndex, int pageSize);
 
-    void saveOrUpdateWithTx(ProjectPO projectPO);
+    void saveOrUpdate(ProjectPO projectPO);
+
+    int delete(int id);
 
 }

@@ -46,7 +46,7 @@ public interface UserMapper {
     UserPO queryById(Integer id);
 
     /**
-     * 根据id查询
+     * 根据username查询
      */
     UserPO queryByUsername(@Param("username") String username, @Param("notEqId") Integer notEqId);
 

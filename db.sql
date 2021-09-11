@@ -39,11 +39,9 @@ CREATE TABLE `project_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_id` int(11) NOT NULL COMMENT '项目id',
   `global_var_json` text COMMENT '全局变量',
-  `exception_script` text COMMENT '脚本: 异常监听',
-  `before_script` text COMMENT '脚本: 请求前',
-  `do_script` text COMMENT '脚本: 请求中',
-  `after_script` text COMMENT '脚本: 请求后',
-  `notify_script` text COMMENT '脚本：通知',
+  `exception_script` text COMMENT '脚本: 策略异常执行',
+  `before_script` text COMMENT '脚本: 策略执行前',
+  `after_script` text COMMENT '脚本: 策略执行后',
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -92,8 +90,8 @@ CREATE TABLE `api_test_case` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='测试用例';
 
 -- 执行策略
-DROP TABLE IF EXISTS `api_execut_strategy`;
-CREATE TABLE `api_execut_strategy` (
+DROP TABLE IF EXISTS `api_execute_strategy`;
+CREATE TABLE `api_execute_strategy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_id` int(11) NOT NULL COMMENT '项目id',
   `name` varchar(50) DEFAULT NULL COMMENT '名称',
@@ -104,9 +102,6 @@ CREATE TABLE `api_execut_strategy` (
   `thread_count` int(11) DEFAULT NULL COMMENT '并发线程数',
   `thread_strategy_json` varchar(300) DEFAULT NULL COMMENT '线程创建策略（瞬时并发、并发间隔、执行次数、压测时间）',
   `script` text COMMENT 'js脚本',
-  `start_time` datetime DEFAULT NULL COMMENT '执行开始-时间',
-  `end_time` datetime DEFAULT NULL COMMENT '执行结束-时间',
-  `status` tinyint(4) DEFAULT NULL COMMENT '运行状态: 1 执行中 2 执行成功 3 执行失败',
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -118,13 +113,13 @@ CREATE TABLE `api_execut_strategy` (
 -- 策略case关联
 CREATE TABLE `strategy_case_relation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `execut_strategy_id` int(11) DEFAULT NULL COMMENT '策略id',
+  `execute_strategy_id` int(11) DEFAULT NULL COMMENT '策略id',
   `case_id` int(11) DEFAULT NULL COMMENT '用例id',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_strategy_id` (`execut_strategy_id`)
+  KEY `idx_strategy_id` (`execute_strategy_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='策略case关联';
 
 -- 请求日志
@@ -132,19 +127,21 @@ DROP TABLE IF EXISTS `api_log`;
 CREATE TABLE `api_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_id` int(11) NOT NULL COMMENT '项目id',
-  `execut_strategy_id` int(11) NOT NULL COMMENT '策略id',
+  `execute_strategy_id` int(11) NOT NULL COMMENT '策略id',
   `test_case_id` int(11) NOT NULL COMMENT '用例id',
   `api_request_id` int(11) NOT NULL COMMENT '接口请求id',
+  `url` varchar(500) DEFAULT NULL COMMENT '请求url',
   `msg` text COMMENT '日志',
   `status` tinyint(4) DEFAULT NULL COMMENT '运行状态: 1 执行中 2 执行成功 3 执行失败',
   `time` int(11) DEFAULT NULL COMMENT '请求接口耗时(ms)',
+  `exec_time` int(11) DEFAULT NULL COMMENT '执行任务耗时(ms)',
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_project_request_id` (`project_id`,`api_request_id`),
-  KEY `idx_execut_strategy_id` (`execut_strategy_id`),
+  KEY `idx_execute_strategy_id` (`execute_strategy_id`),
   KEY `idx_test_case_id` (`test_case_id`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='日志';

@@ -1,7 +1,7 @@
 package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import cn.veasion.auto.model.ApiExecutStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import java.util.List;
 
 /**
@@ -11,27 +11,27 @@ import java.util.List;
  * @date 2021-09-10
  */
 @Mapper
-public interface ApiExecutStrategyMapper {
+public interface ApiExecuteStrategyMapper {
 
     /**
      * 新增
      */
-    int insert(ApiExecutStrategyPO obj);
+    int insert(ApiExecuteStrategyPO obj);
 
     /**
      * 批量新增
      */
-    int insertAll(List<ApiExecutStrategyPO> list);
+    int insertAll(List<ApiExecuteStrategyPO> list);
 
     /**
      * 修改不为空字段
      */
-    int update(ApiExecutStrategyPO obj);
+    int update(ApiExecuteStrategyPO obj);
 
     /**
      * 修改全部字段
      */
-    int updateAll(ApiExecutStrategyPO obj);
+    int updateAll(ApiExecuteStrategyPO obj);
 
     /**
      * 删除
@@ -41,11 +41,11 @@ public interface ApiExecutStrategyMapper {
     /**
      * 根据id查询
      */
-    ApiExecutStrategyPO queryById(Integer id);
+    ApiExecuteStrategyPO queryById(Integer id);
 
     /**
      * 查询list
      */
-    List<ApiExecutStrategyPO> queryList(ApiExecutStrategyPO apiExecutStrategyPO);
+    List<ApiExecuteStrategyPO> queryList(ApiExecuteStrategyPO apiExecuteStrategyPO);
 
 }

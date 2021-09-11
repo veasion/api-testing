@@ -2,6 +2,8 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiRequestPO;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -42,6 +44,11 @@ public interface ApiRequestMapper {
      * 根据id查询
      */
     ApiRequestPO queryById(Integer id);
+
+    /**
+     * 根据username查询
+     */
+    ApiRequestPO queryByApiName(@Param("apiName") String apiName, @Param("notEqId") Integer notEqId);
 
     /**
      * 查询list

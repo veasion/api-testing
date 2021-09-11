@@ -33,8 +33,8 @@ public class R<T> implements Serializable {
         return SUCCESS;
     }
 
-    public static <T> R<T> ok(T data) {
-        return new R<>(data);
+    public static <T> R<T> ok(T content) {
+        return new R<>(content);
     }
 
     public static <T> R<T> error(String message) {
