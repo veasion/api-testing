@@ -3,6 +3,7 @@ package cn.veasion.auto.core;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.service.ApiLogService;
@@ -43,21 +44,32 @@ public class StrategyExecutor {
         Integer type = strategy.getType();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(type);
         if (script && !StringUtils.hasText(strategy.getScript())) {
-            throw new BusinessException("执行策略异常，脚本为空，策略: " + strategy.getName());
+            throw new BusinessException("执行策略异常，脚本为空！策略: " + strategy.getName());
         }
         ScriptContext scriptContext = scriptExecutor.createScriptContext(strategy.getProjectId());
         scriptContext.setStrategy(strategy);
+
+        ApiLogPO apiLog = scriptContext.buildApiLog(null, false);
+        apiLogService.addWithNewTx(apiLog);
+        scriptContext.setRefId(apiLog.getId());
+
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
+        long timeMillis = System.currentTimeMillis();
         try {
             if (StringUtils.hasText(projectConfig.getBeforeScript())) {
                 scriptExecutor.executeScript(projectConfig.getBeforeScript(), scriptContext);
             }
             if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(strategy.getStrategy())) {
                 // 压测
-                runPressure(strategy, scriptContext);
+                apiLog.setStatus(null);
+                runPressure(strategy, scriptContext, apiLog);
+                if (apiLog.getStatus() == null) {
+                    apiLog.setStatus(ApiLogPO.STATUS_SUC);
+                }
             } else {
                 // 普通执行
                 runStrategy(strategy, scriptContext);
+                apiLog.setStatus(ApiLogPO.STATUS_SUC);
             }
             if (StringUtils.hasText(projectConfig.getAfterScript())) {
                 scriptExecutor.executeScript(projectConfig.getAfterScript(), scriptContext);
@@ -67,6 +79,26 @@ public class StrategyExecutor {
             if (StringUtils.hasText(projectConfig.getExceptionScript())) {
                 scriptExecutor.executeScript(projectConfig.getExceptionScript(), scriptContext);
             }
+            apiLog.setMsg(e.getMessage());
+            apiLog.setStatus(ApiLogPO.STATUS_FAIL);
+        } finally {
+            apiLog.setExecTime((int) (System.currentTimeMillis() - timeMillis));
+            List<ApiLogPO> batchLogs = scriptContext.getApiLogList();
+            int totalTime = 0;
+            for (ApiLogPO log : batchLogs) {
+                if (log.getTime() != null) {
+                    totalTime += log.getTime();
+                }
+                if (ApiLogPO.STATUS_FAIL.equals(log.getStatus())) {
+                    apiLog.setStatus(ApiLogPO.STATUS_FAIL);
+                }
+            }
+            apiLog.setTime(totalTime);
+            apiLogService.updateWithNewTx(apiLog);
+            // 批量添加日志
+            apiLogService.addAllWithNewTx(batchLogs);
+            batchLogs.clear();
+            System.gc();
         }
     }
 
@@ -79,22 +111,27 @@ public class StrategyExecutor {
         }
     }
 
-    private void runPressure(ApiExecuteStrategyPO strategy, ScriptContext scriptContext) {
+    private void runPressure(ApiExecuteStrategyPO strategy, ScriptContext scriptContext, ApiLogPO apiLog) throws Exception {
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(strategy.getType());
         int threadCount = Optional.ofNullable(strategy.getThreadCount()).orElse(1);
         ApiExecuteStrategyPO.ThreadStrategy threadStrategy = strategy.toThreadStrategy();
         if (threadStrategy == null || threadStrategy.getType() == null) {
-            throw new BusinessException("压测执行参数异常，策略: " + strategy.getName());
+            throw new BusinessException("压测执行参数异常！策略: " + strategy.getName());
         }
         long intervalInMillis = Optional.ofNullable(threadStrategy.getIntervalInMillis()).orElse(-1L);
         boolean isTime = ApiExecuteStrategyPO.THREAD_STRATEGY_TIME.equals(threadStrategy.getType());
         Callable<?> task = () -> {
-            if (script) {
-                scriptExecutor.execute(strategy, scriptContext);
-            } else {
-                loadCase(strategy, casePO -> scriptExecutor.execute(casePO, scriptContext));
+            try {
+                if (script) {
+                    scriptExecutor.execute(strategy, scriptContext);
+                } else {
+                    loadCase(strategy, casePO -> scriptExecutor.execute(casePO, scriptContext));
+                }
+            } catch (Exception e) {
+                apiLog.setMsg(e.getMessage());
+                apiLog.setStatus(ApiLogPO.STATUS_FAIL);
             }
-            return true;
+            return null;
         };
         try {
             if (isTime) {
@@ -106,6 +143,7 @@ public class StrategyExecutor {
             }
         } catch (Exception e) {
             log.error("压测异常，策略: {}", strategy.getName(), e);
+            throw e;
         }
     }
 

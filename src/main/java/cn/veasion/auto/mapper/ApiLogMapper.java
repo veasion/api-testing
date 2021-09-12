@@ -3,6 +3,7 @@ package cn.veasion.auto.mapper;
 import cn.veasion.auto.model.ApiLogVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiLogPO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -39,17 +40,22 @@ public interface ApiLogMapper {
     /**
      * 删除
      */
-    int deleteById(Integer id);
+    int deleteById(String id);
 
     /**
      * 根据id查询
      */
-    ApiLogPO queryById(Integer id);
+    ApiLogPO queryById(String id);
 
     /**
      * 查询list
      */
     List<ApiLogPO> queryList(ApiLogVO apiLog);
+
+    /**
+     * 根据策略ID查询单策略执行日志
+     */
+    List<ApiLogPO> queryByStrategyId(@Param("executeStrategyId") Integer executeStrategyId, @Param("logId") String logId);
 
     /**
      * 统计各状态数量
@@ -59,11 +65,16 @@ public interface ApiLogMapper {
     /**
      * 按天统计各状态数量
      */
-    List<Map<String, Object>> groupStatusCount(ApiLogVO apiLog);
+    List<Map<String, Object>> groupDayStatusCount(ApiLogVO apiLog);
 
     /**
      * 接口耗时排行榜
      */
     List<Map<String, Object>> listRanking(ApiLogVO apiLog);
+
+    /**
+     * 汇总time
+     */
+    ApiLogPO sumTimeByRefId(@Param("refId") String refId);
 
 }

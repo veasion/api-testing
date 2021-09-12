@@ -44,6 +44,16 @@ public class ApiLogController extends BaseController {
         return R.ok(apiLogService.listPage(apiLog, 1, Constants.MAX_CODE_SIZE));
     }
 
+    @GetMapping("/queryByStrategyId")
+    public Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId) {
+        return Page.ok(apiLogService.queryByStrategyId(executeStrategyId, logId, 1, Constants.MAX_CODE_SIZE));
+    }
+
+    @GetMapping("/pressureResult")
+    public R<Object> pressureResult(Integer strategyId, String logId) {
+        return R.ok(apiLogService.pressureResult(strategyId, logId));
+    }
+
     @GetMapping("/sumList")
     public R<Object> sumList(ApiLogVO apiLog) {
         List<ApiLogPO> list = apiLogService.listPage(apiLog, 1, Constants.MAX_CODE_SIZE);

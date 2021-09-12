@@ -13,7 +13,7 @@ public interface ApiRequestService {
 
     ApiRequestPO getById(int id);
 
-    ApiRequestPO queryByApiName(String apiName);
+    ApiRequestPO queryByApiName(String apiName, Integer projectId);
 
     Page<ApiRequestPO> listPage(ApiRequestPO apiRequestPO, int pageIndex, int pageSize);
 

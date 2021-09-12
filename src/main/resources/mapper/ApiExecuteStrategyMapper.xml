@@ -7,13 +7,13 @@
         (
             project_id, `name`, `desc`, `type`, script,
             strategy, job_cron, thread_count, thread_strategy_json,
-            is_available, is_deleted, create_time, update_time
+            is_available, is_deleted, create_username, create_time, update_time
         )
         values
         (
             #{projectId}, #{name}, #{desc}, #{type}, #{script},
             #{strategy}, #{jobCron}, #{threadCount}, #{threadStrategyJson},
-            #{isAvailable}, #{isDeleted}, #{createTime}, #{updateTime}
+            #{isAvailable}, #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
     </insert>
 
@@ -22,14 +22,14 @@
         (
         project_id, `name`, `desc`, `type`, script,
         strategy, job_cron, thread_count, thread_strategy_json,
-        is_available, is_deleted, create_time, update_time
+        is_available, is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
             (
             #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type}, #{obj.script},
             #{obj.strategy}, #{obj.jobCron}, #{obj.threadCount}, #{obj.threadStrategyJson},
-            #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
             )
         </foreach>
     </insert>
@@ -70,6 +70,9 @@
             <if test="isDeleted != null">
                 is_deleted = #{isDeleted},
             </if>
+            <if test="createUsername != null">
+                create_username = #{createUsername},
+            </if>
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
@@ -94,6 +97,7 @@
             script = #{script},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
+            create_username = #{createUsername},
             create_time = #{createTime},
             update_time = #{updateTime},
         </set>

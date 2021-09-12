@@ -11,7 +11,7 @@ import org.springframework.util.StringUtils;
  * @date 2021-09-10
  */
 @Data
-public class ApiExecuteStrategyPO extends BasePO {
+public class ApiExecuteStrategyPO extends BasePO<Integer> {
 
     public static final Integer TYPE_ALL_CASE = 1;
     public static final Integer TYPE_CASES = 2;

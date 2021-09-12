@@ -81,7 +81,7 @@ public class ApiExecuteStrategyController extends BaseController {
     }
 
     @PostMapping("/deleteCases")
-    public R<Object> deleteCases(JSONObject data) {
+    public R<Object> deleteCases(@RequestBody JSONObject data) {
         notNull(data);
         Integer id = data.getInteger("id");
         List<Integer> caseIds = data.getJSONArray("caseIds").toJavaList(Integer.class);
@@ -89,7 +89,7 @@ public class ApiExecuteStrategyController extends BaseController {
     }
 
     @PostMapping("/addCasesWithTx")
-    public R<Object> addCasesWithTx(JSONObject data) {
+    public R<Object> addCasesWithTx(@RequestBody JSONObject data) {
         notNull(data);
         Integer id = data.getInteger("id");
         List<Integer> caseIds = data.getJSONArray("caseIds").toJavaList(Integer.class);

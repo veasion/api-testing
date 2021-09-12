@@ -19,21 +19,35 @@ public interface ApiLogService {
 
     int addWithNewTx(ApiLogPO apiLogPO);
 
+    int addAllWithNewTx(List<ApiLogPO> list);
+
     void updateWithNewTx(ApiLogPO apiLogPO);
+
+    int updateRefTimeStatusWithNewTx(ApiLogPO apiLogPO);
+
+    /**
+     * 根据策略ID查询单策略执行日志
+     */
+    Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId, int pageIndex, int pageSize);
 
     /**
      * 统计各状态数量
      */
-    List<Map<String, Object>> countStatus(ApiLogVO apiLog);
+    Map<Integer, Integer> countStatus(ApiLogVO apiLog);
 
     /**
      * 按天统计各状态数量
      */
-    List<Map<String, Object>> groupStatusCount(ApiLogVO apiLog);
+    List<Map<String, Object>> groupDayStatusCount(ApiLogVO apiLog);
 
     /**
      * 接口耗时排行榜
      */
     List<Map<String, Object>> listRanking(ApiLogVO apiLog);
+
+    /**
+     * 压测结果分析
+     */
+    Map<String, Object> pressureResult(Integer strategyId, String logId);
 
 }

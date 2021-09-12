@@ -1,6 +1,7 @@
 package cn.veasion.auto.model;
 
-import lombok.Data;
+import cn.veasion.auto.utils.Constants;
+import cn.veasion.auto.utils.UserUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,12 +16,30 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class BasePO implements Serializable {
+public class BasePO<T extends Serializable> implements Serializable {
 
-    private Integer id;
-    private Integer isAvailable = 1;
-    private Integer isDeleted = 0;
+    private T id;
+    private Integer isAvailable;
+    private Integer isDeleted;
+    private String createUsername;
     private Date createTime;
     private Date updateTime;
 
+    public void init() {
+        if (isAvailable == null) {
+            isAvailable = Constants.YES;
+        }
+        if (isDeleted == null) {
+            isDeleted = Constants.NO;
+        }
+        if (createUsername == null) {
+            createUsername = UserUtils.getUsername();
+        }
+        if (createTime == null) {
+            createTime = new Date();
+        }
+        if (updateTime == null) {
+            updateTime = new Date();
+        }
+    }
 }

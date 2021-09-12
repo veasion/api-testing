@@ -6,12 +6,12 @@
         insert into project
         (
             name, description, email, is_available, 
-            is_deleted, create_time, update_time
+            is_deleted, create_username, create_time, update_time
         )
         values
         (
             #{name}, #{description}, #{email}, #{isAvailable}, 
-            #{isDeleted}, #{createTime}, #{updateTime}
+            #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
     </insert>
 
@@ -19,13 +19,13 @@
         insert into project
         (
             name, description, email, is_available, 
-            is_deleted, create_time, update_time
+            is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.name}, #{obj.description}, #{obj.email}, #{obj.isAvailable}, 
-            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -34,7 +34,7 @@
         update project
         <set>
             <if test="name != null">
-                name = #{name},
+                `name` = #{name},
             </if>
             <if test="description != null">
                 description = #{description},
@@ -47,6 +47,9 @@
             </if>
             <if test="isDeleted != null">
                 is_deleted = #{isDeleted},
+            </if>
+            <if test="createUsername != null">
+                create_username = #{createUsername},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},
@@ -66,6 +69,7 @@
             email = #{email},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
+            create_username = #{createUsername},
             create_time = #{createTime},
             update_time = #{updateTime},
         </set>

@@ -45,7 +45,7 @@ public class IndexController {
         ApiLogVO apiLog = new ApiLogVO();
         apiLog.setStartCreateDate(DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd 00:00:00"));
         apiLog.setEndCreateTime(DateUtils.formatDate(new Date(), "yyyy-MM-dd 59:59:59"));
-        List<Map<String, Object>> mapList = apiLogService.groupStatusCount(apiLog);
+        List<Map<String, Object>> mapList = apiLogService.groupDayStatusCount(apiLog);
         Map<String, Map<String, Object>> dayMap = new HashMap<>(mapList.size());
         for (Map<String, Object> map : mapList) {
             dayMap.put(String.valueOf(map.get("date")), map);
@@ -73,11 +73,7 @@ public class IndexController {
             }
         }
 
-        List<Map<String, Object>> countStatusList = apiLogService.countStatus(null);
-        Map<Number, Number> statusMap = new HashMap<>();
-        for (Map<String, Object> map : countStatusList) {
-            statusMap.put((Number) map.get("status"), (Number) map.get("count"));
-        }
+        Map<Integer, Integer> statusMap = apiLogService.countStatus(null);
 
         Map<String, Object> result = new HashMap<>();
         result.put("triggerDayList", triggerDayList);

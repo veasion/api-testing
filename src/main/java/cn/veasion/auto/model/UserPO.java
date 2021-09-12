@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2021/9/10
  */
 @Data
-public class UserPO extends BasePO {
+public class UserPO extends BasePO<Integer> {
 
     private String username;
     private String password;

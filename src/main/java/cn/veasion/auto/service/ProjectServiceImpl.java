@@ -4,11 +4,13 @@ import cn.veasion.auto.mapper.ProjectConfigMapper;
 import cn.veasion.auto.mapper.ProjectMapper;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
+import cn.veasion.auto.utils.Constants;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * ProjectServiceImpl
@@ -42,16 +44,20 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void saveOrUpdate(ProjectPO projectPO) {
         if (projectPO.getId() == null) {
+            projectPO.init();
             projectMapper.insert(projectPO);
         } else {
+            projectPO.setUpdateTime(new Date());
             projectMapper.update(projectPO);
         }
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         if (projectConfig != null) {
             projectConfig.setProjectId(projectPO.getId());
             if (projectConfig.getId() == null) {
+                projectConfig.init();
                 projectConfigMapper.insert(projectConfig);
             } else {
+                projectConfig.setUpdateTime(new Date());
                 projectConfigMapper.update(projectConfig);
             }
         }

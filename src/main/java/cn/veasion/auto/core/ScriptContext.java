@@ -8,7 +8,9 @@ import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectPO;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,11 +21,21 @@ import java.util.Map;
  */
 public class ScriptContext {
 
+    private String refId;
     private Integer projectId;
     private ProjectPO project;
     private ApiExecuteStrategyPO strategy;
+    private final List<ApiLogPO> apiLogList = new ArrayList<>();
     private final Map<String, ScriptBindBean> root = new HashMap<>();
-    private ThreadLocal<ApiTestCasePO> threadLocalCase = new ThreadLocal<>();
+    private final ThreadLocal<ApiTestCasePO> threadLocalCase = new ThreadLocal<>();
+
+    public String getRefId() {
+        return refId;
+    }
+
+    void setRefId(String refId) {
+        this.refId = refId;
+    }
 
     public Integer getProjectId() {
         return projectId;
@@ -67,7 +79,13 @@ public class ScriptContext {
     }
 
     public ApiLogPO buildApiLog(ApiRequestPO requestPO) {
+        return buildApiLog(requestPO, true);
+    }
+
+    public ApiLogPO buildApiLog(ApiRequestPO requestPO, boolean batch) {
         ApiLogPO apiLog = new ApiLogPO();
+        apiLog.init();
+        apiLog.setRefId(refId == null ? "0" : refId);
         apiLog.setProjectId(projectId);
         if (strategy != null) {
             apiLog.setExecuteStrategyId(strategy.getId());
@@ -81,7 +99,16 @@ public class ScriptContext {
             apiLog.setUrl(requestPO.getUrl());
         }
         apiLog.setStatus(ApiLogPO.STATUS_RUNNING);
+        if (batch) {
+            synchronized (apiLogList) {
+                apiLogList.add(apiLog);
+            }
+        }
         return apiLog;
+    }
+
+    public List<ApiLogPO> getApiLogList() {
+        return apiLogList;
     }
 
 }

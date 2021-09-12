@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * UserServiceImpl
@@ -46,8 +47,10 @@ public class UserServiceImpl implements UserService {
             }
         }
         if (userPO.getId() == null) {
+            userPO.init();
             userMapper.insert(userPO);
         } else {
+            userPO.setUpdateTime(new Date());
             userMapper.update(userPO);
         }
     }

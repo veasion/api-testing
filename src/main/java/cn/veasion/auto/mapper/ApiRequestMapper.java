@@ -48,7 +48,7 @@ public interface ApiRequestMapper {
     /**
      * 根据username查询
      */
-    ApiRequestPO queryByApiName(@Param("apiName") String apiName, @Param("notEqId") Integer notEqId);
+    ApiRequestPO queryByApiName(@Param("apiName") String apiName, @Param("projectId") Integer projectId, @Param("notEqId") Integer notEqId);
 
     /**
      * 查询list

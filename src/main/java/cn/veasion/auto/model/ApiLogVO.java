@@ -13,7 +13,8 @@ import java.util.List;
 @Data
 public class ApiLogVO {
 
-    private Integer id;
+    private String id;
+    private String refId;
     private Integer projectId;
     private Integer executeStrategyId;
     private Integer testCaseId;

@@ -1,6 +1,5 @@
 package cn.veasion.auto.core;
 
-import cn.veasion.auto.config.SpringBeanUtils;
 import cn.veasion.auto.core.bind.EnvScriptBindBean;
 import cn.veasion.auto.core.bind.ScriptBindBean;
 import cn.veasion.auto.exception.BusinessException;
@@ -19,7 +18,7 @@ import javax.annotation.Resource;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.SimpleScriptContext;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * ScriptExecutor
@@ -40,6 +39,8 @@ public class ScriptExecutor {
 
     @Resource
     private ProjectService projectService;
+    @Resource
+    private Set<ScriptBindBean> scriptBindBeans;
 
     public ScriptContext createScriptContext(Integer projectId) {
         ProjectPO projectPO = projectService.getById(projectId);
@@ -48,7 +49,7 @@ public class ScriptExecutor {
         }
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         if (projectConfig != null && StringUtils.hasText(projectConfig.getGlobalVarJson())) {
-            EnvScriptBindBean.globalMap.put(projectId, projectConfig.toGlobalVarJson());
+            EnvScriptBindBean.setGlobalMap(projectId, projectConfig.toGlobalVarJson());
         }
         ScriptContext scriptContext = new ScriptContext();
         scriptContext.setProjectId(projectId);
@@ -57,16 +58,17 @@ public class ScriptExecutor {
     }
 
     private ScriptEngine initScriptEngine(ScriptContext scriptContext) {
-        Map<String, ScriptBindBean> scriptBindBeanMap = SpringBeanUtils.getBeanOfType(ScriptBindBean.class);
         ScriptEngine scriptEngine = SCRIPT_ENGINE_FACTORY.getScriptEngine("--language=es6", "--no-java");
         scriptEngine.setContext(new SimpleScriptContext());
         Bindings bindings = scriptEngine.getBindings(ENGINE_BINDINGS_SCOPE);
-        for (ScriptBindBean bindBean : scriptBindBeanMap.values()) {
+        for (ScriptBindBean bindBean : scriptBindBeans) {
             String var = bindBean.var();
             ScriptBindBean object = bindBean.getObject();
+            object.setScriptContext(scriptContext);
             bindings.put(var, object);
             scriptContext.getRoot().put(var, object);
         }
+        scriptContext.getEnv().reset();
         bindings.put("scriptContext", scriptContext);
         return scriptEngine;
     }
@@ -98,6 +100,8 @@ public class ScriptExecutor {
         } catch (Exception e) {
             log.error("执行脚本失败，策略: {}", strategyPO.getName(), e);
             return null;
+        } finally {
+            scriptContext.getEnv().reset();
         }
     }
 
@@ -112,6 +116,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，用例: {}", testCasePO.getCaseName(), e);
             return null;
         } finally {
+            scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();
         }
     }
@@ -128,6 +133,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，apiName: {}", apiName, e);
             return null;
         } finally {
+            scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();
         }
     }

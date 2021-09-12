@@ -7,13 +7,13 @@
         (
             project_id, api_name, api_desc, method, 
             url, body, script, is_available, headers_json,
-            is_deleted, create_time, update_time
+            is_deleted, create_username, create_time, update_time
         )
         values
         (
             #{projectId}, #{apiName}, #{apiDesc}, #{method}, 
             #{url}, #{body}, #{script}, #{isAvailable}, #{headersJson},
-            #{isDeleted}, #{createTime}, #{updateTime}
+            #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
     </insert>
 
@@ -22,14 +22,14 @@
         (
             project_id, api_name, api_desc, method, 
             url, body, script, is_available, headers_json,
-            is_deleted, create_time, update_time
+            is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.projectId}, #{obj.apiName}, #{obj.apiDesc}, #{obj.method}, 
             #{obj.url}, #{obj.body}, #{obj.script}, #{obj.isAvailable}, #{obj.headersJson},
-            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -67,6 +67,9 @@
             <if test="isDeleted != null">
                 is_deleted = #{isDeleted},
             </if>
+            <if test="createUsername != null">
+                create_username = #{createUsername},
+            </if>
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
@@ -90,6 +93,7 @@
             script = #{script},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
+            create_username = #{createUsername},
             create_time = #{createTime},
             update_time = #{updateTime},
         </set>
@@ -105,7 +109,7 @@
     </select>
 
     <select id="queryByApiName" resultType="cn.veasion.auto.model.ApiRequestPO">
-        select * from api_request t where api_name = #{apiName} and is_deleted = 0
+        select * from api_request t where api_name = #{apiName} and project_id = #{projectId} and is_deleted = 0
         <if test="notEqId != null">
             and id &lt;&gt; #{notEqId}
         </if>
@@ -135,6 +139,9 @@
         </if>
         <if test="isAvailable != null">
             and t.is_available = #{isAvailable}
+        </if>
+        <if test="createUsername != null and createUsername.trim() != ''">
+            and t.create_username like concat('%', #{createUsername}, '%')
         </if>
         <if test="createTime != null">
             and t.create_time >= #{createTime}

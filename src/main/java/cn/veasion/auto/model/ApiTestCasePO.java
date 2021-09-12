@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2021-09-10
  */
 @Data
-public class ApiTestCasePO extends BasePO {
+public class ApiTestCasePO extends BasePO<Integer> {
 
     /**
      * 项目id

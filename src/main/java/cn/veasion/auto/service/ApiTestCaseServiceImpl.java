@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * ApiTestCaseServiceImpl
@@ -34,8 +35,10 @@ public class ApiTestCaseServiceImpl implements ApiTestCaseService {
     @Override
     public void saveOrUpdate(ApiTestCasePO apiTestCasePO) {
         if (apiTestCasePO.getId() == null) {
+            apiTestCasePO.init();
             apiTestCaseMapper.insert(apiTestCasePO);
         } else {
+            apiTestCasePO.setUpdateTime(new Date());
             apiTestCaseMapper.update(apiTestCasePO);
         }
     }

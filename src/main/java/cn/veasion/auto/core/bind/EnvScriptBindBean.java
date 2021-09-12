@@ -19,8 +19,8 @@ import java.util.function.Function;
 @Scope("prototype")
 public class EnvScriptBindBean extends AbstractScriptBindBean {
 
-    public static final Map<Integer, Map<String, Object>> globalMap = new ConcurrentHashMap<>();
-    private Map<String, Object> envMap = new HashMap<>();
+    static final Map<Integer, Map<String, Object>> globalMap = new ConcurrentHashMap<>();
+    private ThreadLocal<Map<String, Object>> envMap = ThreadLocal.withInitial(HashMap::new);
 
     public Object eval(String str) {
         return EvalAnalysisUtils.eval(str, (Function<String, ?>) this::get);
@@ -31,7 +31,7 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
     }
 
     public void put(String key, Object value) {
-        envMap.put(key, value);
+        envMap.get().put(key, value);
     }
 
     public void setGlobal(String key, Object value) {
@@ -43,7 +43,7 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
     }
 
     public Object get(String key) {
-        return envMap.getOrDefault(key, getGlobalMap().get(key));
+        return envMap.get().getOrDefault(key, getGlobalMap().get(key));
     }
 
     public Object getGlobal(String key) {
@@ -54,15 +54,19 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
         return getGlobalMap(scriptContext.getProjectId());
     }
 
-    public Map<String, Object> getGlobalMap(Integer projectId) {
+    public synchronized static Map<String, Object> getGlobalMap(Integer projectId) {
         if (!globalMap.containsKey(projectId)) {
             globalMap.put(projectId, new ConcurrentHashMap<>());
         }
         return globalMap.get(projectId);
     }
 
-    public void setGlobalMap(Integer projectId, Map<String, Object> map) {
+    public synchronized static void setGlobalMap(Integer projectId, Map<String, Object> map) {
         globalMap.put(projectId, new ConcurrentHashMap<>(map));
+    }
+
+    public void reset() {
+        envMap.remove();
     }
 
 }

@@ -1,6 +1,5 @@
 package cn.veasion.auto.utils;
 
-import com.alibaba.fastjson.JSON;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -51,9 +50,8 @@ public class JwtTokenUtils {
         return userInfo.get(1);
     }
 
-    // 从token中获取用户名
+    // 从token中获取userId
     public static Integer getUserId(String token) {
-        String s = JSON.toJSONString(getTokenBody(token).getSubject());
         List<String> userInfo = Arrays.asList(getTokenBody(token).getSubject().split(SPLIT_COMMA));
         return Integer.parseInt(userInfo.get(0));
     }

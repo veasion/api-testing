@@ -5,27 +5,27 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into project_config
         (
-            project_id, global_var_json, exception_script, before_script, 
-            after_script, is_available, is_deleted, create_time, update_time
+            project_id, open_req_log, global_var_json, exception_script, before_script,
+            after_script, is_available, is_deleted, create_username, create_time, update_time
         )
         values
         (
-            #{projectId}, #{globalVarJson}, #{exceptionScript}, #{beforeScript}, 
-            #{afterScript}, #{isAvailable}, #{isDeleted}, #{createTime}, #{updateTime}
+            #{projectId}, #{openReqLog}, #{globalVarJson}, #{exceptionScript}, #{beforeScript},
+            #{afterScript}, #{isAvailable}, #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
     </insert>
 
     <insert id="insertAll">
         insert into project_config
         (
-            project_id, global_var_json, exception_script, before_script, 
-            after_script, is_available, is_deleted, create_time, update_time
+            project_id, open_req_log, global_var_json, exception_script, before_script,
+            after_script, is_available, is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.projectId}, #{obj.globalVarJson}, #{obj.exceptionScript}, #{obj.beforeScript}, 
-            #{obj.afterScript}, #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.projectId}, #{obj.openReqLog}, #{obj.globalVarJson}, #{obj.exceptionScript}, #{obj.beforeScript},
+            #{obj.afterScript}, #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -35,6 +35,9 @@
         <set>
             <if test="projectId != null">
                 project_id = #{projectId},
+            </if>
+            <if test="openReqLog != null">
+                open_req_log = #{openReqLog},
             </if>
             <if test="globalVarJson != null">
                 global_var_json = #{globalVarJson},
@@ -54,6 +57,9 @@
             <if test="isDeleted != null">
                 is_deleted = #{isDeleted},
             </if>
+            <if test="createUsername != null">
+                create_username = #{createUsername},
+            </if>
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
@@ -68,12 +74,14 @@
         update project_config
         <set>
             project_id = #{projectId},
+            open_req_log = #{openReqLog},
             global_var_json = #{globalVarJson},
             exception_script = #{exceptionScript},
             before_script = #{beforeScript},
             after_script = #{afterScript},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
+            create_username = #{createUsername},
             create_time = #{createTime},
             update_time = #{updateTime},
         </set>

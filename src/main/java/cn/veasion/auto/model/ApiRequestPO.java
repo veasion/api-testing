@@ -13,7 +13,7 @@ import java.util.Map;
  * @date 2021-09-10
  */
 @Data
-public class ApiRequestPO extends BasePO {
+public class ApiRequestPO extends BasePO<Integer> {
 
     /**
      * 项目id

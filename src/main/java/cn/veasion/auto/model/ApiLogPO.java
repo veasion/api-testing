@@ -1,5 +1,6 @@
 package cn.veasion.auto.model;
 
+import cn.veasion.auto.utils.StringUtils;
 import lombok.Data;
 
 /**
@@ -9,12 +10,16 @@ import lombok.Data;
  * @date 2021-09-10
  */
 @Data
-public class ApiLogPO extends BasePO {
+public class ApiLogPO extends BasePO<String> {
 
     public static final Integer STATUS_RUNNING = 1;
     public static final Integer STATUS_SUC = 2;
     public static final Integer STATUS_FAIL = 3;
 
+    /**
+     * 关联日志id
+     */
+    private String refId;
     /**
      * 项目id
      */
@@ -52,4 +57,11 @@ public class ApiLogPO extends BasePO {
      */
     private Integer execTime;
 
+    @Override
+    public void init() {
+        super.init();
+        if (getId() == null) {
+            setId(StringUtils.getUUID());
+        }
+    }
 }

@@ -3,6 +3,7 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.config.ScheduledConfig;
 import cn.veasion.auto.config.SpringBeanUtils;
 import cn.veasion.auto.core.StrategyExecutor;
+import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
@@ -20,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,10 +60,28 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
     @Override
     public void saveOrUpdate(ApiExecuteStrategyPO apiExecuteStrategyPO) {
         if (apiExecuteStrategyPO.getId() == null) {
+            apiExecuteStrategyPO.init();
             apiExecuteStrategyMapper.insert(apiExecuteStrategyPO);
         } else {
+            apiExecuteStrategyPO.setUpdateTime(new Date());
             apiExecuteStrategyMapper.update(apiExecuteStrategyPO);
             apiExecuteStrategyPO = getById(apiExecuteStrategyPO.getId());
+        }
+        if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(apiExecuteStrategyPO.getStrategy())) {
+            ApiExecuteStrategyPO.ThreadStrategy threadStrategy = apiExecuteStrategyPO.toThreadStrategy();
+            if (threadStrategy == null) {
+                throw new BusinessException("线程创建策略不能为空");
+            }
+            if (threadStrategy.getType() == null) {
+                throw new BusinessException("压测类型不能为空");
+            }
+            if (ApiExecuteStrategyPO.THREAD_STRATEGY_TIME.equals(threadStrategy.getType())) {
+                if (threadStrategy.getTimeInMillis() == null || threadStrategy.getTimeInMillis() <= 0) {
+                    throw new BusinessException("压测时长填写错误");
+                }
+            } else if (threadStrategy.getLoopCount() == null || threadStrategy.getLoopCount() <= 0) {
+                throw new BusinessException("压测次数填写错误");
+            }
         }
         String key = ScheduledConfig.key(ApiExecuteStrategyPO.class, apiExecuteStrategyPO.getId());
         if (ApiExecuteStrategyPO.STRATEGY_JOB.equals(apiExecuteStrategyPO.getStrategy()) &&
@@ -90,6 +110,7 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
         List<StrategyCaseRelationPO> list = new ArrayList<>(caseIds.size());
         for (Integer caseId : caseIds) {
             StrategyCaseRelationPO relationPO = new StrategyCaseRelationPO();
+            relationPO.init();
             relationPO.setCaseId(caseId);
             relationPO.setExecuteStrategyId(id);
             list.add(relationPO);

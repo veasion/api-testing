@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * ApiRequestServiceImpl
@@ -27,8 +28,8 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     }
 
     @Override
-    public ApiRequestPO queryByApiName(String apiName) {
-        return apiRequestMapper.queryByApiName(apiName, null);
+    public ApiRequestPO queryByApiName(String apiName, Integer projectId) {
+        return apiRequestMapper.queryByApiName(apiName, projectId, null);
     }
 
     @Override
@@ -39,15 +40,20 @@ public class ApiRequestServiceImpl implements ApiRequestService {
 
     @Override
     public void saveOrUpdate(ApiRequestPO apiRequestPO) {
+        if (apiRequestPO.getProjectId() == null) {
+            throw new BusinessException("projectId不能为空");
+        }
         if (apiRequestPO.getApiName() != null) {
-            ApiRequestPO obj = apiRequestMapper.queryByApiName(apiRequestPO.getApiName(), apiRequestPO.getId());
+            ApiRequestPO obj = apiRequestMapper.queryByApiName(apiRequestPO.getApiName(), apiRequestPO.getProjectId(), apiRequestPO.getId());
             if (obj != null) {
                 throw new BusinessException("api命名已存在");
             }
         }
         if (apiRequestPO.getId() == null) {
+            apiRequestPO.init();
             apiRequestMapper.insert(apiRequestPO);
         } else {
+            apiRequestPO.setUpdateTime(new Date());
             apiRequestMapper.update(apiRequestPO);
         }
     }

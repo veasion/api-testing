@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2021-09-10
  */
 @Data
-public class StrategyCaseRelationPO extends BasePO {
+public class StrategyCaseRelationPO extends BasePO<Integer> {
 
     /**
      * 策略id

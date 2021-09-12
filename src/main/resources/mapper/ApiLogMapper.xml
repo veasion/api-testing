@@ -5,13 +5,13 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into api_log
         (
-            project_id, execute_strategy_id, test_case_id, api_request_id,
+            id, ref_id, project_id, execute_strategy_id, test_case_id, api_request_id,
             url, msg, status, `time`, exec_time, is_available,
             is_deleted, create_time, update_time
         )
         values
         (
-            #{projectId}, #{executeStrategyId}, #{testCaseId}, #{apiRequestId},
+            #{id}, #{refId}, #{projectId}, #{executeStrategyId}, #{testCaseId}, #{apiRequestId},
             #{url}, #{msg}, #{status}, #{time}, #{execTime}, #{isAvailable},
             #{isDeleted}, #{createTime}, #{updateTime}
         )
@@ -20,14 +20,14 @@
     <insert id="insertAll">
         insert into api_log
         (
-            project_id, execute_strategy_id, test_case_id, api_request_id,
+            id, ref_id, project_id, execute_strategy_id, test_case_id, api_request_id,
             url, msg, status, `time`, exec_time, is_available,
             is_deleted, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.projectId}, #{obj.executeStrategyId}, #{obj.testCaseId}, #{obj.apiRequestId},
+            #{obj.id}, #{obj.refId}, #{obj.projectId}, #{obj.executeStrategyId}, #{obj.testCaseId}, #{obj.apiRequestId},
             #{obj.url}, #{obj.msg}, #{obj.status}, #{obj.time}, #{obj.execTime}, #{obj.isAvailable},
             #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
         )
@@ -37,6 +37,9 @@
     <update id="update">
         update api_log
         <set>
+            <if test="refId != null">
+                ref_id = #{refId},
+            </if>
             <if test="projectId != null">
                 project_id = #{projectId},
             </if>
@@ -83,6 +86,7 @@
     <update id="updateAll">
         update api_log
         <set>
+            ref_id = #{refId},
             project_id = #{projectId},
             execute_strategy_id = #{executeStrategyId},
             test_case_id = #{testCaseId},
@@ -114,35 +118,52 @@
         order by id desc
     </select>
 
+    <select id="queryByStrategyId" resultType="cn.veasion.auto.model.ApiLogPO">
+        select * from api_log where is_deleted = 0 and ref_id = '0'
+        and execute_strategy_id = #{executeStrategyId}
+        <if test="logId != null">
+            and id = #{logId}
+        </if>
+        order by id desc
+    </select>
+
     <select id="countStatus" resultType="hashmap">
         select status, count(1) as count from api_log t
-        where is_deleted = 0
+        where is_deleted = 0 and ref_id &lt;&gt; 0
         <include refid="whereSQL" />
         group by status
     </select>
 
-    <select id="groupStatusCount" resultType="hashmap">
+    <select id="groupDayStatusCount" resultType="hashmap">
         select
         DATE_FORMAT(create_time, '%Y-%m-%d') as date,
         COUNT(IF(status = 1, 1, NULL)) as 'status1',
         COUNT(IF(status = 2, 1, NULL)) as 'status2',
         COUNT(IF(status = 3, 1, NULL)) as 'status3'
         from api_log t
-        where is_deleted = 0
+        where is_deleted = 0 and ref_id &lt;&gt; 0
         <include refid="whereSQL" />
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
     </select>
 
     <select id="listRanking" resultType="hashmap">
         select api.*, t.url as 'reqUrl', t.time, t.exec_time, t.msg from api_request api, api_log t
-        where api.id = t.api_request_id and api.is_deleted = 0 and t.is_deleted = 0 and api.is_available = 1
+        where api.id = t.api_request_id and api.is_deleted = 0 and t.is_deleted = 0
+        and api.is_available = 1 and t.ref_id &lt;&gt; '0'
         <include refid="whereSQL" />
         order by t.time desc limit 20
     </select>
 
+    <select id="sumTimeByRefId" resultType="cn.veasion.auto.model.ApiLogPO">
+        select SUM(`time`) as time, MAX(status) as status from api_log where ref_id = #{refId} and is_deleted = 0
+    </select>
+
     <sql id="whereSQL">
-        <if test="id != null">
+        <if test="id != null and id.trim() != ''">
             and t.id = #{id}
+        </if>
+        <if test="refId != null">
+            and t.ref_id = #{refId}
         </if>
         <if test="projectId != null">
             and t.project_id = #{projectId}
