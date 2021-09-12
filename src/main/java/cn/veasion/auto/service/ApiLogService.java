@@ -2,6 +2,7 @@ package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiLogVO;
+import cn.veasion.auto.model.ApiRankingVO;
 import com.github.pagehelper.Page;
 
 import java.util.List;
@@ -25,6 +26,8 @@ public interface ApiLogService {
 
     int updateRefTimeStatusWithNewTx(ApiLogPO apiLogPO);
 
+    int deleteLogs(String beforeCreateTime);
+
     /**
      * 根据策略ID查询单策略执行日志
      */
@@ -43,7 +46,7 @@ public interface ApiLogService {
     /**
      * 接口耗时排行榜
      */
-    List<Map<String, Object>> listRanking(ApiLogVO apiLog);
+    List<ApiRankingVO> listRanking(ApiLogVO apiLog);
 
     /**
      * 压测结果分析

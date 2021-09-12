@@ -104,9 +104,9 @@
         where id = #{id}
     </update>
 
-    <update id="deleteById">
-        update api_log set is_deleted = 1 where id = #{value}
-    </update>
+    <delete id="deleteLogs">
+        delete from api_log t where create_time &lt;= #{value}
+    </delete>
 
     <select id="queryById" resultType="cn.veasion.auto.model.ApiLogPO">
         select * from api_log t where id = #{value}
@@ -146,16 +146,17 @@
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
     </select>
 
-    <select id="listRanking" resultType="hashmap">
-        select api.*, t.url as 'reqUrl', t.time, t.exec_time, t.msg from api_request api, api_log t
-        where api.id = t.api_request_id and api.is_deleted = 0 and t.is_deleted = 0
-        and api.is_available = 1 and t.ref_id &lt;&gt; '0'
+    <select id="listRanking" resultType="cn.veasion.auto.model.ApiRankingVO">
+        select t.*, api.api_name, api.api_desc, api.method
+        from api_log t left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
+        where t.is_deleted = 0 and t.ref_id &lt;&gt; '0'
         <include refid="whereSQL" />
+        group by t.execute_strategy_id, t.url
         order by t.time desc limit 20
     </select>
 
     <select id="sumTimeByRefId" resultType="cn.veasion.auto.model.ApiLogPO">
-        select SUM(`time`) as time, MAX(status) as status from api_log where ref_id = #{refId} and is_deleted = 0
+        select SUM(`time`) as time, MAX(status) as status from api_log t where ref_id = #{refId} and is_deleted = 0
     </select>
 
     <sql id="whereSQL">

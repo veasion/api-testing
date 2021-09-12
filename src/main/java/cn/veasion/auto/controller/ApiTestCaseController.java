@@ -28,19 +28,11 @@ public class ApiTestCaseController extends BaseController {
     @Resource
     private ApiTestCaseService apiTestCaseService;
 
-    @GetMapping("/pageList")
-    public Page<ApiTestCasePO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                        @RequestParam(required = false, defaultValue = "10") int size,
-                                        @RequestParam(required = false) Integer projectId,
-                                        @RequestParam(required = false) String caseName,
-                                        @RequestParam(required = false) String module,
-                                        @RequestParam(required = false) String author) {
-        ApiTestCasePO apiTestCase = new ApiTestCasePO();
-        apiTestCase.setProjectId(projectId);
-        apiTestCase.setCaseName(caseName);
-        apiTestCase.setModule(module);
-        apiTestCase.setAuthor(author);
-        return Page.ok(apiTestCaseService.listPage(apiTestCase, current, size));
+    @GetMapping("/listPage")
+    public Page<ApiTestCasePO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                        @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                        ApiTestCasePO apiTestCasePO) {
+        return Page.ok(apiTestCaseService.listPage(apiTestCasePO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
@@ -73,8 +65,8 @@ public class ApiTestCaseController extends BaseController {
         return R.ok();
     }
 
-    @PostMapping("/remove")
-    public R<Object> remove(Integer id) {
+    @PostMapping("/delete")
+    public R<Object> delete(@RequestBody Integer id) {
         apiTestCaseService.delete(id);
         return R.ok();
     }

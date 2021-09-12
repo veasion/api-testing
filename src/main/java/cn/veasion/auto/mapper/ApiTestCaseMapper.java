@@ -2,6 +2,7 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiTestCasePO;
+
 import java.util.List;
 
 /**
@@ -47,5 +48,7 @@ public interface ApiTestCaseMapper {
      * 查询list
      */
     List<ApiTestCasePO> queryList(ApiTestCasePO apiTestCasePO);
+
+    List<ApiTestCasePO> queryByIds(List<Integer> ids);
 
 }

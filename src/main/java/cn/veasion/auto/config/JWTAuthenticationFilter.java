@@ -65,7 +65,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setHeader("token", JwtTokenUtils.TOKEN_PREFIX + token);
         response.setCharacterEncoding("UTF-8");
         Map<String, Object> map = new HashMap<>();
-        map.put("data", JwtTokenUtils.TOKEN_PREFIX + token);
+        map.put("token", JwtTokenUtils.TOKEN_PREFIX + token);
         map.put("roles", role.split(Constants.SPLIT_COMMA));
         response.getWriter().write(JSON.toJSONString(R.ok(map)));
     }

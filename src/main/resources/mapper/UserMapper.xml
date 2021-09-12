@@ -81,7 +81,7 @@
     </select>
 
     <select id="queryByUsername" resultType="cn.veasion.auto.model.UserPO">
-        select * from user where username = #{username} and is_deleted = 0
+        select * from user t where username = #{username} and is_deleted = 0
         <choose>
             <when test="notEqId != null">
                 and id &lt;&gt; #{notEqId}
@@ -93,7 +93,7 @@
     </select>
 
     <select id="queryList" resultType="cn.veasion.auto.model.UserPO">
-        select * from user where is_deleted = 0
+        select * from user t where is_deleted = 0
         <include refid="whereSQL" />
         order by id desc
     </select>

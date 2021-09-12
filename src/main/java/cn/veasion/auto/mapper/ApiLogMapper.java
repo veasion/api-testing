@@ -1,6 +1,7 @@
 package cn.veasion.auto.mapper;
 
 import cn.veasion.auto.model.ApiLogVO;
+import cn.veasion.auto.model.ApiRankingVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiLogPO;
 import org.apache.ibatis.annotations.Param;
@@ -40,7 +41,7 @@ public interface ApiLogMapper {
     /**
      * 删除
      */
-    int deleteById(String id);
+    int deleteLogs(String beforeCreateTime);
 
     /**
      * 根据id查询
@@ -70,7 +71,7 @@ public interface ApiLogMapper {
     /**
      * 接口耗时排行榜
      */
-    List<Map<String, Object>> listRanking(ApiLogVO apiLog);
+    List<ApiRankingVO> listRanking(ApiLogVO apiLog);
 
     /**
      * 汇总time

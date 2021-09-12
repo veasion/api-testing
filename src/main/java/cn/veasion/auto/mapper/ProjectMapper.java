@@ -2,6 +2,7 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ProjectPO;
+
 import java.util.List;
 
 /**
@@ -47,5 +48,7 @@ public interface ProjectMapper {
      * 查询list
      */
     List<ProjectPO> queryList(ProjectPO projectPO);
+
+    List<ProjectPO> queryByIds(List<Integer> ids);
 
 }

@@ -90,6 +90,11 @@
         order by id desc
     </select>
 
+    <select id="queryByIds" resultType="cn.veasion.auto.model.ProjectPO">
+        select * from project t where is_deleted = 0
+        and id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+
     <sql id="whereSQL">
         <if test="id != null">
             and t.id = #{id}

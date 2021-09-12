@@ -30,11 +30,11 @@ public class ApiExecuteStrategyController extends BaseController {
     @Resource
     private ApiExecuteStrategyService apiExecuteStrategyService;
 
-    @GetMapping("/pageList")
-    public Page<ApiExecuteStrategyPO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                              @RequestParam(required = false, defaultValue = "10") int size,
+    @GetMapping("/listPage")
+    public Page<ApiExecuteStrategyPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                              @RequestParam(required = false, defaultValue = "10") int pageSize,
                                               ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        return Page.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyPO, current, size));
+        return Page.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyPO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
@@ -69,8 +69,8 @@ public class ApiExecuteStrategyController extends BaseController {
         return R.ok();
     }
 
-    @PostMapping("/remove")
-    public R<Object> remove(Integer id) {
+    @PostMapping("/delete")
+    public R<Object> delete(@RequestBody Integer id) {
         apiExecuteStrategyService.delete(id);
         return R.ok();
     }

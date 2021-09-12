@@ -15,26 +15,26 @@ public class R<T> implements Serializable {
     private static final R<Object> SUCCESS = new R<>(null);
 
     private int code;
-    private String msg;
-    private T content;
+    private String message;
+    private T data;
 
-    public R(T content) {
-        this.content = content;
+    public R(T data) {
+        this.data = data;
         this.code = SUCCESS_CODE;
     }
 
-    public R(int code, String msg, T content) {
+    public R(int code, String message, T data) {
         this.code = code;
-        this.msg = msg;
-        this.content = content;
+        this.message = message;
+        this.data = data;
     }
 
     public static R<Object> ok() {
         return SUCCESS;
     }
 
-    public static <T> R<T> ok(T content) {
-        return new R<>(content);
+    public static <T> R<T> ok(T data) {
+        return new R<>(data);
     }
 
     public static <T> R<T> error(String message) {
@@ -49,19 +49,19 @@ public class R<T> implements Serializable {
         this.code = code;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public T getContent() {
-        return content;
+    public T getData() {
+        return data;
     }
 
-    public void setContent(T content) {
-        this.content = content;
+    public void setData(T data) {
+        this.data = data;
     }
 }

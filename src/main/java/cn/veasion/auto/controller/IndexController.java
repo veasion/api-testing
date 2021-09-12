@@ -2,17 +2,15 @@ package cn.veasion.auto.controller;
 
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiLogVO;
+import cn.veasion.auto.model.ApiRankingVO;
 import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiLogService;
+import cn.veasion.auto.utils.CpuMemoryUtils;
 import org.apache.http.client.utils.DateUtils;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -34,8 +32,18 @@ public class IndexController {
     private ApiLogService apiLogService;
 
     @RequestMapping("/listRanking")
-    public R<Object> listRanking(ApiLogVO apiLog) {
+    public R<List<ApiRankingVO>> listRanking(ApiLogVO apiLog) {
         return R.ok(apiLogService.listRanking(apiLog));
+    }
+
+    @RequestMapping("/serverInfo")
+    public R<Object> serverInfo() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("cpuUsage", CpuMemoryUtils.cpuLoad());
+        data.put("memoryUsage", CpuMemoryUtils.memoryLoad());
+        data.put("jvmUsage", CpuMemoryUtils.jvmLoad());
+        data.put("updateTime", new Date());
+        return R.ok(data);
     }
 
     @RequestMapping("/chartInfo")
@@ -51,47 +59,40 @@ public class IndexController {
             dayMap.put(String.valueOf(map.get("date")), map);
         }
 
-        List<String> triggerDayList = new ArrayList<>();
-        List<Number> triggerDayCountSucList = new ArrayList<>();
-        List<Number> triggerDayCountFailList = new ArrayList<>();
-        List<Number> triggerDayCountRunningList = new ArrayList<>();
+        List<String> dayList = new ArrayList<>();
+        List<Number> dayCountSucList = new ArrayList<>();
+        List<Number> dayCountFailList = new ArrayList<>();
+        List<Number> dayCountRunningList = new ArrayList<>();
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 6; i >= 0; i--) {
             calendar = Calendar.getInstance();
             calendar.add(Calendar.DAY_OF_MONTH, i);
             String date = DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd");
-            triggerDayList.add(date);
+            dayList.add(date);
             Map<String, Object> dayCountMap = dayMap.get(date);
             if (dayCountMap == null) {
-                triggerDayCountSucList.add(0);
-                triggerDayCountFailList.add(0);
-                triggerDayCountRunningList.add(0);
+                dayCountSucList.add(0);
+                dayCountFailList.add(0);
+                dayCountRunningList.add(0);
             } else {
-                triggerDayCountSucList.add((Number) dayCountMap.getOrDefault("status2", 0));
-                triggerDayCountFailList.add((Number) dayCountMap.getOrDefault("status3", 0));
-                triggerDayCountRunningList.add((Number) dayCountMap.getOrDefault("status1", 0));
+                dayCountSucList.add((Number) dayCountMap.getOrDefault("status2", 0));
+                dayCountFailList.add((Number) dayCountMap.getOrDefault("status3", 0));
+                dayCountRunningList.add((Number) dayCountMap.getOrDefault("status1", 0));
             }
         }
 
         Map<Integer, Integer> statusMap = apiLogService.countStatus(null);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("triggerDayList", triggerDayList);
-        result.put("triggerDayCountSucList", triggerDayCountSucList);
-        result.put("triggerDayCountFailList", triggerDayCountFailList);
-        result.put("triggerDayCountRunningList", triggerDayCountRunningList);
+        result.put("dayList", dayList);
+        result.put("dayCountSucList", dayCountSucList);
+        result.put("dayCountFailList", dayCountFailList);
+        result.put("dayCountRunningList", dayCountRunningList);
 
-        result.put("triggerCountSucTotal", statusMap.getOrDefault(ApiLogPO.STATUS_SUC, 0));
-        result.put("triggerCountFailTotal", statusMap.getOrDefault(ApiLogPO.STATUS_FAIL, 0));
-        result.put("triggerCountRunningTotal", statusMap.getOrDefault(ApiLogPO.STATUS_RUNNING, 0));
+        result.put("countSucTotal", statusMap.getOrDefault(ApiLogPO.STATUS_SUC, 0));
+        result.put("countFailTotal", statusMap.getOrDefault(ApiLogPO.STATUS_FAIL, 0));
+        result.put("countRunningTotal", statusMap.getOrDefault(ApiLogPO.STATUS_RUNNING, 0));
         return R.ok(result);
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateFormat.setLenient(false);
-        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
     }
 
 }

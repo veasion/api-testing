@@ -28,13 +28,11 @@ public class ProjectController extends BaseController {
     @Resource
     private ProjectService projectService;
 
-    @GetMapping("/pageList")
-    public Page<ProjectPO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                    @RequestParam(required = false, defaultValue = "10") int size,
-                                    @RequestParam(required = false) String name) {
-        ProjectPO projectPO = new ProjectPO();
-        projectPO.setName(name);
-        return Page.ok(projectService.listPage(projectPO, current, size));
+    @GetMapping("/listPage")
+    public Page<ProjectPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                    @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                    ProjectPO projectPO) {
+        return Page.ok(projectService.listPage(projectPO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
@@ -65,8 +63,8 @@ public class ProjectController extends BaseController {
         return R.ok();
     }
 
-    @PostMapping("/remove")
-    public R<Object> remove(Integer id) {
+    @PostMapping("/delete")
+    public R<Object> delete(@RequestBody Integer id) {
         projectService.delete(id);
         return R.ok();
     }

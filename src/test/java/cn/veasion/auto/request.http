@@ -1,0 +1,51 @@
+### 登录
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123456"
+}
+
+> {% client.global.set("token", JSON.parse(response.body).data.token); %}
+
+### 报表
+POST http://localhost:8080/api/chartInfo
+Authorization: {{token}}
+
+### 排行榜
+POST http://localhost:8080/api/listRanking
+Authorization: {{token}}
+
+### 查询项目列表
+GET http://localhost:8080/api/project/listPage?current=1&size=10&name=测试
+Authorization: {{token}}
+
+### 新增策略
+POST http://localhost:8080/api/apiExecutStrategy/add
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "projectId": 1,
+  "name": "test",
+  "type": 1,
+  "strategy": 1,
+  "jobCron": "*/3 * * * * ?"
+}
+
+> {% client.global.set("apiExecutStrategyId", response.body.data); %}
+
+### 修改策略
+POST http://localhost:8080/api/apiExecutStrategy/update
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "id": "{{apiExecutStrategyId}}",
+  "isAvailable": 0,
+  "jobCron": "*/3 * * * * ?"
+}
+
+### 手动触发job
+GET http://localhost:8080/public/job/check

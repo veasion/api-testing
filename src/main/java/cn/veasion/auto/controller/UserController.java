@@ -32,13 +32,11 @@ public class UserController extends BaseController {
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @GetMapping("/pageList")
-    public Page<UserPO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                 @RequestParam(required = false, defaultValue = "10") int size,
-                                 @RequestParam(required = false) String username) {
-        UserPO userPO = new UserPO();
-        userPO.setUsername(username);
-        return Page.ok(userService.listPage(userPO, current, size));
+    @GetMapping("/listPage")
+    public Page<UserPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                 @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                 UserPO userPO) {
+        return Page.ok(userService.listPage(userPO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
@@ -83,8 +81,8 @@ public class UserController extends BaseController {
         return R.ok();
     }
 
-    @PostMapping("/remove")
-    public R<Object> remove(Integer id) {
+    @PostMapping("/delete")
+    public R<Object> delete(@RequestBody Integer id) {
         userService.delete(id);
         return R.ok();
     }

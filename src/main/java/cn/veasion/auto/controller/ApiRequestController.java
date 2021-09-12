@@ -28,11 +28,11 @@ public class ApiRequestController extends BaseController {
     @Resource
     private ApiRequestService apiRequestService;
 
-    @GetMapping("/pageList")
-    public Page<ApiRequestPO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                       @RequestParam(required = false, defaultValue = "10") int size,
+    @GetMapping("/listPage")
+    public Page<ApiRequestPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                       @RequestParam(required = false, defaultValue = "10") int pageSize,
                                        ApiRequestPO apiRequestPO) {
-        return Page.ok(apiRequestService.listPage(apiRequestPO, current, size));
+        return Page.ok(apiRequestService.listPage(apiRequestPO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
@@ -62,8 +62,8 @@ public class ApiRequestController extends BaseController {
         return R.ok();
     }
 
-    @PostMapping("/remove")
-    public R<Object> remove(Integer id) {
+    @PostMapping("/delete")
+    public R<Object> delete(@RequestBody Integer id) {
         apiRequestService.delete(id);
         return R.ok();
     }

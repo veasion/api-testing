@@ -48,4 +48,6 @@ public interface ApiExecuteStrategyMapper {
      */
     List<ApiExecuteStrategyPO> queryList(ApiExecuteStrategyPO apiExecuteStrategyPO);
 
+    List<ApiExecuteStrategyPO> queryByIds(List<Integer> ids);
+
 }

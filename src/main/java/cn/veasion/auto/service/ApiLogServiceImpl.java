@@ -2,9 +2,14 @@ package cn.veasion.auto.service;
 
 import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.ApiLogMapper;
+import cn.veasion.auto.mapper.ApiTestCaseMapper;
+import cn.veasion.auto.mapper.ProjectMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiLogVO;
+import cn.veasion.auto.model.ApiRankingVO;
+import cn.veasion.auto.model.ApiTestCasePO;
+import cn.veasion.auto.model.ProjectPO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.http.client.utils.DateUtils;
@@ -13,12 +18,16 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * ApiLogServiceImpl
@@ -31,6 +40,10 @@ public class ApiLogServiceImpl implements ApiLogService {
 
     @Resource
     private ApiLogMapper apiLogMapper;
+    @Resource
+    private ProjectMapper projectMapper;
+    @Resource
+    private ApiTestCaseMapper apiTestCaseMapper;
     @Resource
     private ApiExecuteStrategyMapper apiExecuteStrategyMapper;
 
@@ -99,6 +112,11 @@ public class ApiLogServiceImpl implements ApiLogService {
     }
 
     @Override
+    public int deleteLogs(String beforeCreateTime) {
+        return apiLogMapper.deleteLogs(beforeCreateTime);
+    }
+
+    @Override
     public Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId, int pageIndex, int pageSize) {
         PageHelper.startPage(pageIndex, pageSize);
         return (Page<ApiLogPO>) apiLogMapper.queryByStrategyId(executeStrategyId, logId);
@@ -131,11 +149,50 @@ public class ApiLogServiceImpl implements ApiLogService {
     }
 
     @Override
-    public List<Map<String, Object>> listRanking(ApiLogVO apiLog) {
+    public List<ApiRankingVO> listRanking(ApiLogVO apiLog) {
         if (apiLog == null) {
             apiLog = new ApiLogVO();
         }
-        return apiLogMapper.listRanking(apiLog);
+        if (apiLog.getStartCreateDate() == null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_MONTH, -7);
+            apiLog.setStartCreateDate(DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd 00:00:00"));
+        }
+        List<ApiRankingVO> list = apiLogMapper.listRanking(apiLog);
+        if (list == null || list.isEmpty()) {
+            return list;
+        }
+        List<Integer> projectIds = list.stream().map(ApiRankingVO::getProjectId).filter(Objects::nonNull).collect(Collectors.toList());
+        if (projectIds.size() > 0) {
+            List<ProjectPO> poList = projectMapper.queryByIds(projectIds);
+            Map<Integer, ProjectPO> map = poList.stream().collect(Collectors.toMap(ProjectPO::getId, Function.identity(), (t1, t2) -> t1));
+            for (ApiRankingVO apiRankingVO : list) {
+                if (map.containsKey(apiRankingVO.getProjectId())) {
+                    apiRankingVO.setProjectName(map.get(apiRankingVO.getProjectId()).getName());
+                }
+            }
+        }
+        List<Integer> strategyIds = list.stream().map(ApiRankingVO::getExecuteStrategyId).filter(Objects::nonNull).collect(Collectors.toList());
+        if (strategyIds.size() > 0) {
+            List<ApiExecuteStrategyPO> poList = apiExecuteStrategyMapper.queryByIds(strategyIds);
+            Map<Integer, ApiExecuteStrategyPO> map = poList.stream().collect(Collectors.toMap(ApiExecuteStrategyPO::getId, Function.identity(), (t1, t2) -> t1));
+            for (ApiRankingVO apiRankingVO : list) {
+                if (map.containsKey(apiRankingVO.getExecuteStrategyId())) {
+                    apiRankingVO.setExecuteStrategyName(map.get(apiRankingVO.getExecuteStrategyId()).getName());
+                }
+            }
+        }
+        List<Integer> testCaseIds = list.stream().map(ApiRankingVO::getTestCaseId).filter(Objects::nonNull).collect(Collectors.toList());
+        if (testCaseIds.size() > 0) {
+            List<ApiTestCasePO> poList = apiTestCaseMapper.queryByIds(strategyIds);
+            Map<Integer, ApiTestCasePO> map = poList.stream().collect(Collectors.toMap(ApiTestCasePO::getId, Function.identity(), (t1, t2) -> t1));
+            for (ApiRankingVO apiRankingVO : list) {
+                if (map.containsKey(apiRankingVO.getTestCaseId())) {
+                    apiRankingVO.setTestCaseName(map.get(apiRankingVO.getTestCaseId()).getCaseName());
+                }
+            }
+        }
+        return list;
     }
 
     @Override

@@ -32,11 +32,11 @@ public class ApiLogController extends BaseController {
     @Resource
     private ApiLogService apiLogService;
 
-    @GetMapping("/pageList")
-    public Page<ApiLogPO> pageList(@RequestParam(required = false, defaultValue = "1") int current,
-                                   @RequestParam(required = false, defaultValue = "10") int size,
+    @GetMapping("/listPage")
+    public Page<ApiLogPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                   @RequestParam(required = false, defaultValue = "10") int pageSize,
                                    ApiLogVO apiLog) {
-        return Page.ok(apiLogService.listPage(apiLog, current, size));
+        return Page.ok(apiLogService.listPage(apiLog, pageNo, pageSize));
     }
 
     @GetMapping("/list")

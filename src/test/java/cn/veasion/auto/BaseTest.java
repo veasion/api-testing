@@ -33,7 +33,7 @@ public class BaseTest {
     protected MockMvc mockMvc;
     protected String token;
 
-    static final String JSON_DATA_KEY = "content";
+    static final String JSON_DATA_KEY = "data";
     static final String HEADER_TOKEN = "Authorization";
 
     @BeforeEach
@@ -49,7 +49,7 @@ public class BaseTest {
             String content = mvcResult.getResponse().getContentAsString();
             Assertions.assertTrue(StringUtils.hasText(content));
             JSONObject data = JSONObject.parseObject(content);
-            token = data.getJSONObject(JSON_DATA_KEY).getString("data");
+            token = data.getJSONObject(JSON_DATA_KEY).getString("token");
             System.out.println(HEADER_TOKEN + ": " + token);
         }
     }
