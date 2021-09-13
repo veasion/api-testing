@@ -6,19 +6,16 @@ import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.service.ApiRequestService;
 import cn.veasion.auto.utils.Constants;
-import cn.veasion.auto.utils.HttpClientUtils;
+import cn.veasion.auto.utils.HttpUtils;
 import cn.veasion.auto.utils.JavaScriptUtils;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * HttpScriptBindBean
@@ -66,47 +63,34 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         } else {
             headers = null;
         }
-        boolean isGet = !StringUtils.hasText(method) || "GET".equalsIgnoreCase(method);
-        return execute(requestPO, url, buildReqLog(method, url, body, headers), () -> {
-            try {
-                if (isGet) {
-                    return IOUtils.toString(HttpClientUtils.get(url, headers), HttpClientUtils.CHARSET_DEFAULT);
-                } else {
-                    return HttpClientUtils.post(url, body, null, null, headers);
-                }
-            } catch (IOException e) {
-                throw new BusinessException("请求异常", e);
-            }
-        });
+        if (!StringUtils.hasText(method)) {
+            method = "GET";
+        }
+        return execute(requestPO, HttpUtils.HttpRequest.build(url, method).setBody(body).setHeaders(headers));
+    }
+
+    public Object request(String url, String method, Object body, Object headers) {
+        String reqUrl = eval(url);
+        return execute(HttpUtils.HttpRequest.build(reqUrl, method).setBody(toString(body)).setHeaders(toMap(headers)));
     }
 
     public Object postJson(String url, Object json) {
         String reqUrl = eval(url);
         String body = toString(json);
-        return execute(reqUrl, buildReqLog("POST", reqUrl, body, null), () -> {
-            try {
-                return HttpClientUtils.postJson(reqUrl, body);
-            } catch (IOException e) {
-                throw new BusinessException("请求异常", e);
-            }
-        });
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_JSON));
     }
 
-    public Object postForm(String url, Object postForm) {
-        return postForm(url, postForm, null);
-    }
-
-    public Object postForm(String url, Object postForm, Object headers) {
+    public Object postFormData(String url, String body) {
         String reqUrl = eval(url);
-        Map<String, String> formMap = toMap(postForm);
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_FORM_DATA));
+    }
+
+    public Object postFormDataByParam(String url, Object formDataParams, Object headers) {
+        String reqUrl = eval(url);
+        Map<String, String> formMap = toMap(formDataParams);
         Map<String, String> headerMap = toMap(headers);
-        return execute(reqUrl, buildReqLog("POST", reqUrl, buildLinks(formMap), headerMap), () -> {
-            try {
-                return HttpClientUtils.postForm(reqUrl, formMap, headerMap);
-            } catch (IOException e) {
-                throw new BusinessException("请求异常", e);
-            }
-        });
+        String body = buildLinks(formMap);
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).setHeaders(headerMap).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_FORM_DATA));
     }
 
     public Object post(String url, Object body) {
@@ -117,13 +101,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         String reqUrl = eval(url);
         String bodyStr = toString(body);
         Map<String, String> headerMap = toMap(headers);
-        return execute(reqUrl, buildReqLog("POST", reqUrl, bodyStr, headerMap), () -> {
-            try {
-                return HttpClientUtils.post(reqUrl, bodyStr, null, null, headerMap);
-            } catch (IOException e) {
-                throw new BusinessException("请求异常", e);
-            }
-        });
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(bodyStr).setHeaders(headerMap));
     }
 
     public Object get(String url) {
@@ -133,13 +111,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     public Object get(String url, Object headers) {
         String reqUrl = eval(url);
         Map<String, String> headerMap = toMap(headers);
-        return execute(reqUrl, buildReqLog("GET", reqUrl, null, headerMap), () -> {
-            try {
-                return IOUtils.toString(HttpClientUtils.get(reqUrl, headerMap), HttpClientUtils.CHARSET_DEFAULT);
-            } catch (IOException e) {
-                throw new BusinessException("请求异常", e);
-            }
-        });
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "GET").setHeaders(headerMap));
     }
 
     public Object getByParams(String url, Object params) {
@@ -167,11 +139,17 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     }
 
     private String eval(String str) {
+        if (!StringUtils.hasText(str)) {
+            return str;
+        }
         Object val = scriptContext.getEnv().eval(str);
         return val == null ? str : val.toString();
     }
 
     private String eval(String str, Map<String, Object> params) {
+        if (!StringUtils.hasText(str)) {
+            return str;
+        }
         Object val = scriptContext.getEnv().eval(str, params);
         return val == null ? str : val.toString();
     }
@@ -202,33 +180,31 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         return result;
     }
 
-    private Object execute(String url, Supplier<String> reqLog, Supplier<String> supplier) {
-        return execute(null, url, reqLog, supplier);
+    private Object execute(HttpUtils.HttpRequest request) {
+        return execute(null, request);
     }
 
-    private Object execute(ApiRequestPO requestPO, String url, Supplier<String> reqLog, Supplier<String> supplier) {
+    private Object execute(ApiRequestPO requestPO, HttpUtils.HttpRequest request) {
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         boolean openReqLog = projectConfig != null && Constants.YES.equals(projectConfig.getOpenReqLog());
         ApiLogPO apiLogPO = scriptContext.buildApiLog(requestPO);
-        apiLogPO.setUrl(url);
-        if (openReqLog) {
-            apiLogPO.setMsg(reqLog.get());
-        }
+        apiLogPO.setUrl(request.getUrl());
         long timeMillis = System.currentTimeMillis();
         try {
-            String response = supplier.get();
-            apiLogPO.setTime((int) (System.currentTimeMillis() - timeMillis));
-            apiLogPO.setExecTime(apiLogPO.getTime());
-            apiLogPO.setStatus(ApiLogPO.STATUS_SUC);
+            HttpUtils.HttpResponse response = HttpUtils.request(request);
+            apiLogPO.setTime((int) response.getReqTime());
+            apiLogPO.setStatus(response.success() ? ApiLogPO.STATUS_SUC : ApiLogPO.STATUS_FAIL);
             if (openReqLog) {
-                apiLogPO.setMsg(apiLogPO.getMsg() + "\n\n======response======\n\n" + response);
+                apiLogPO.setMsg(buildReqLog(request, response));
             }
-            return handleResponse(response);
+            Object result = handleResponse(response.getResponse());
+            apiLogPO.setExecTime((int) (System.currentTimeMillis() - timeMillis));
+            return result;
         } catch (Exception e) {
-            log.error("请求接口失败: " + url, e);
+            log.error("请求接口失败: " + request.getUrl(), e);
             String msg = e.getClass().getSimpleName() + ": " + e.getMessage();
             if (openReqLog) {
-                apiLogPO.setMsg(apiLogPO.getMsg() + "\n\n" + msg);
+                apiLogPO.setMsg(buildReqLog(request, null) + "\n\n" + msg);
             } else {
                 apiLogPO.setMsg(msg);
             }
@@ -239,12 +215,15 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         }
     }
 
-    private static Object handleResponse(String response) {
-        if (StringUtils.hasText(response)) {
-            String str = response.trim();
+    private static Object handleResponse(Object response) {
+        if (response == null) {
+            return null;
+        }
+        if (response instanceof String) {
+            String str = ((String) response).trim();
             if (str.startsWith("{") || str.startsWith("[")) {
                 try {
-                    return JSON.parse(response);
+                    return JSON.parse(str);
                 } catch (Exception e) {
                     if (log.isDebugEnabled()) {
                         log.debug("解析请求结果为json错误", e);
@@ -255,23 +234,27 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         return response;
     }
 
-    private Supplier<String> buildReqLog(String method, String url, String body, Map<String, String> headers) {
-        return () -> {
-            StringBuilder sb = new StringBuilder();
-            if (StringUtils.hasText(method)) {
-                sb.append(method).append(" ");
+    private String buildReqLog(HttpUtils.HttpRequest request, HttpUtils.HttpResponse response) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.hasText(request.getMethod())) {
+            sb.append(request.getMethod()).append(" ");
+        }
+        sb.append(request.getUrl()).append("\r\n");
+        if (request.getHeaders() != null && request.getHeaders().size() > 0) {
+            for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
             }
-            sb.append(url).append("\r\n");
-            if (headers != null && headers.size() > 0) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
-                }
-            }
+        }
+        sb.append("\r\n");
+        if (request.getBody() != null) {
+            sb.append(request.getBody()).append("\r\n\r\n");
+        }
+        if (response != null) {
             sb.append("\r\n");
-            if (body != null) {
-                sb.append(body).append("\r\n\r\n");
-            }
-            return sb.toString();
-        };
+            sb.append("status: ").append(response.getStatus());
+            sb.append("\n\n======response======\n\n");
+            sb.append(response.getResponse());
+        }
+        return sb.toString();
     }
 }
