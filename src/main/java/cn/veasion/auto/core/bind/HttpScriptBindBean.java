@@ -34,21 +34,34 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     private ApiRequestService apiRequestService;
 
     public Object request(String apiName) {
+        return request(apiName, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Object request(String apiName, Object params) {
         ApiRequestPO requestPO = apiRequestService.queryByApiName(apiName, scriptContext.getProjectId());
         if (requestPO == null) {
             throw new BusinessException("请求不存在：" + apiName);
         }
-        return request(requestPO);
+        if (!JavaScriptUtils.isNull(params)) {
+            if (params instanceof String) {
+                params = JSON.parseObject((String) params);
+            }
+            params = JavaScriptUtils.toJavaObject(params);
+            return request(requestPO, (Map<String, Object>) params);
+        } else {
+            return request(requestPO, null);
+        }
     }
 
-    public Object request(ApiRequestPO requestPO) {
+    public Object request(ApiRequestPO requestPO, Map<String, Object> params) {
         String method = requestPO.getMethod();
-        String url = eval(requestPO.getUrl());
-        String body = eval(requestPO.getBody());
+        String url = eval(requestPO.getUrl(), params);
+        String body = eval(requestPO.getBody(), params);
         String headersJson = requestPO.getHeadersJson();
         Map<String, String> headers;
         if (StringUtils.hasText(headersJson)) {
-            headersJson = eval(headersJson);
+            headersJson = eval(headersJson, params);
             headers = toMap(JSON.parseObject(headersJson));
         } else {
             headers = null;
@@ -155,6 +168,11 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
 
     private String eval(String str) {
         Object val = scriptContext.getEnv().eval(str);
+        return val == null ? str : val.toString();
+    }
+
+    private String eval(String str, Map<String, Object> params) {
+        Object val = scriptContext.getEnv().eval(str, params);
         return val == null ? str : val.toString();
     }
 

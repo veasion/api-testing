@@ -1,6 +1,8 @@
 package cn.veasion.auto.core.bind;
 
 import cn.veasion.auto.utils.EvalAnalysisUtils;
+import cn.veasion.auto.utils.JavaScriptUtils;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +21,25 @@ import java.util.function.Function;
 @Scope("prototype")
 public class EnvScriptBindBean extends AbstractScriptBindBean {
 
-    static final Map<Integer, Map<String, Object>> globalMap = new ConcurrentHashMap<>();
+    private static final Map<Integer, Map<String, Object>> globalMap = new ConcurrentHashMap<>();
     private ThreadLocal<Map<String, Object>> envMap = ThreadLocal.withInitial(HashMap::new);
 
     public Object eval(String str) {
         return EvalAnalysisUtils.eval(str, (Function<String, ?>) this::get);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Object eval(String str, ScriptObjectMirror params) {
+        return eval(str, (Map<String, Object>) JavaScriptUtils.toJavaObject(params));
+    }
+
+    public Object eval(String str, Map<String, Object> params) {
+        return EvalAnalysisUtils.eval(str, (Function<String, ?>) key -> {
+            if (params != null && params.containsKey(key)) {
+                return params.get(key);
+            }
+            return get(key);
+        });
     }
 
     public void set(String key, Object value) {

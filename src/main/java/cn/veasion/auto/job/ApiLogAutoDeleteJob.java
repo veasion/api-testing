@@ -20,7 +20,7 @@ public class ApiLogAutoDeleteJob {
     @Resource
     private ApiLogService apiLogService;
 
-    @Scheduled(cron = "* 30 0 * * ?")
+    @Scheduled(cron = "0 30 1 * * ?")
     public void autoDeleteJob() {
         // 删除30天前的日志
         Calendar calendar = Calendar.getInstance();

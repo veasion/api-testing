@@ -131,6 +131,9 @@
         <if test="apiName != null and apiName.trim() != ''">
             and t.api_name like concat('%', #{apiName}, '%')
         </if>
+        <if test="apiDesc != null and apiDesc.trim() != ''">
+            and t.api_desc like concat('%', #{apiDesc}, '%')
+        </if>
         <if test="method != null and method.trim() != ''">
             and t.method = #{method}
         </if>

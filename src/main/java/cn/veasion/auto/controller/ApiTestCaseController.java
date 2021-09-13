@@ -36,11 +36,7 @@ public class ApiTestCaseController extends BaseController {
     }
 
     @GetMapping("/list")
-    public R<List<ApiTestCasePO>> list(@RequestParam(required = false) Integer projectId,
-                                       @RequestParam(required = false) String caseName) {
-        ApiTestCasePO apiTestCase = new ApiTestCasePO();
-        apiTestCase.setProjectId(projectId);
-        apiTestCase.setCaseName(caseName);
+    public R<List<ApiTestCasePO>> list(ApiTestCasePO apiTestCase) {
         return R.ok(apiTestCaseService.listPage(apiTestCase, 1, Constants.MAX_CODE_SIZE));
     }
 

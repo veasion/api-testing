@@ -48,6 +48,7 @@ public class ApiRequestController extends BaseController {
     @PostMapping("/add")
     public R<Object> add(@RequestBody ApiRequestPO apiRequestPO) {
         apiRequestPO.setId(null);
+        notNull(apiRequestPO.getProjectId(), "项目不能为空");
         notEmpty(apiRequestPO.getApiName(), "命名不能为空");
         notEmpty(apiRequestPO.getApiDesc(), "请求描述不能为空");
         apiRequestPO.setApiName(apiRequestPO.getApiName().trim());

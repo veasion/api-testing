@@ -131,7 +131,7 @@ public class BusinessProcessTest extends BaseTest {
         strategyPO.setType(ApiExecuteStrategyPO.TYPE_CASES);
         strategyPO.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
         strategyPO.setIsAvailable(1);
-        strategyPO.setJobCron("* */10 * * * ?");
+        strategyPO.setJobCron("0 */10 * * * ?");
 
         JSONObject data = postRequest("/api/apiExecuteStrategy/add", strategyPO);
         System.out.println("新增策略: " + data);

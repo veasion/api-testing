@@ -36,9 +36,7 @@ public class ProjectController extends BaseController {
     }
 
     @GetMapping("/list")
-    public R<List<ProjectPO>> list(@RequestParam(required = false) String name) {
-        ProjectPO projectPO = new ProjectPO();
-        projectPO.setName(name);
+    public R<List<ProjectPO>> list(ProjectPO projectPO) {
         return R.ok(projectService.listPage(projectPO, 1, Constants.MAX_CODE_SIZE));
     }
 

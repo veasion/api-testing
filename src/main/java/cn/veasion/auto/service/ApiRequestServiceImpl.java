@@ -3,6 +3,8 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiRequestMapper;
 import cn.veasion.auto.model.ApiRequestPO;
+import cn.veasion.auto.utils.StringUtils;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,13 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     public void saveOrUpdate(ApiRequestPO apiRequestPO) {
         if (apiRequestPO.getProjectId() == null) {
             throw new BusinessException("projectId不能为空");
+        }
+        if (StringUtils.hasText(apiRequestPO.getHeadersJson())) {
+            try {
+                JSON.parseObject(apiRequestPO.getHeadersJson());
+            } catch (Exception e) {
+                throw new BusinessException("请求头格式错误，必须为JSON格式");
+            }
         }
         if (apiRequestPO.getApiName() != null) {
             ApiRequestPO obj = apiRequestMapper.queryByApiName(apiRequestPO.getApiName(), apiRequestPO.getProjectId(), apiRequestPO.getId());

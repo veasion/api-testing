@@ -121,6 +121,9 @@
         <if test="caseName != null and caseName.trim() != ''">
             and t.case_name like concat('%', #{caseName}, '%')
         </if>
+        <if test="caseDesc != null and caseDesc.trim() != ''">
+            and t.case_desc like concat('%', #{caseDesc}, '%')
+        </if>
         <if test="module != null and module.trim() != ''">
             and t.module like concat('%', #{module}, '%')
         </if>

@@ -40,9 +40,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/list")
-    public R<List<UserPO>> list(@RequestParam(required = false) String username) {
-        UserPO userPO = new UserPO();
-        userPO.setUsername(username);
+    public R<List<UserPO>> list(UserPO userPO) {
         return R.ok(userService.listPage(userPO, 1, Constants.MAX_PAGE_SIZE));
     }
 

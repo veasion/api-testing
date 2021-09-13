@@ -24,7 +24,7 @@ public class CheckStrategyJob {
     @Resource
     private ApiExecuteStrategyService apiExecuteStrategyService;
 
-    @Scheduled(cron = "* */30 * * * ?")
+    @Scheduled(cron = "0 */30 * * * ? ")
     public void check() {
         ApiExecuteStrategyPO apiExecuteStrategyPO = new ApiExecuteStrategyPO();
         apiExecuteStrategyPO.setJobCron("*");
