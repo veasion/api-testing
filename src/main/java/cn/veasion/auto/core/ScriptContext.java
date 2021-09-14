@@ -7,6 +7,7 @@ import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectPO;
+import cn.veasion.auto.utils.HttpUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ public class ScriptContext {
     private final List<ApiLogPO> apiLogList = new ArrayList<>();
     private final Map<String, ScriptBindBean> root = new HashMap<>();
     private final ThreadLocal<ApiTestCasePO> threadLocalCase = new ThreadLocal<>();
+    private List<RequestProcessor> requestProcessors = new ArrayList<>();
+    private List<ResponseProcessor> responseProcessors = new ArrayList<>();
 
     public String getRefId() {
         return refId;
@@ -74,7 +77,7 @@ public class ScriptContext {
         return null;
     }
 
-    public ThreadLocal<ApiTestCasePO> getThreadLocalCase() {
+    ThreadLocal<ApiTestCasePO> getThreadLocalCase() {
         return threadLocalCase;
     }
 
@@ -109,6 +112,38 @@ public class ScriptContext {
 
     public List<ApiLogPO> getApiLogList() {
         return apiLogList;
+    }
+
+    public ScriptContext addRequestProcessor(RequestProcessor method) {
+        if (method != null) {
+            this.requestProcessors.add(method);
+        }
+        return this;
+    }
+
+    public ScriptContext addResponseProcessor(ResponseProcessor method) {
+        if (method != null) {
+            this.responseProcessors.add(method);
+        }
+        return this;
+    }
+
+    public void requestProcessor(HttpUtils.HttpRequest request) {
+        requestProcessors.forEach(p -> p.handle(request));
+    }
+
+    public void responseProcessor(Object response, int httpStatus, ApiLogPO log) {
+        responseProcessors.forEach(p -> p.handle(response, httpStatus, log));
+    }
+
+    @FunctionalInterface
+    public interface RequestProcessor {
+        void handle(HttpUtils.HttpRequest request);
+    }
+
+    @FunctionalInterface
+    public interface ResponseProcessor {
+        void handle(Object response, int httpStatus, ApiLogPO log);
     }
 
 }

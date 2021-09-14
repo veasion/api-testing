@@ -71,25 +71,26 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
 
     public Object request(String url, String method, Object body, Object headers) {
         String reqUrl = eval(url);
-        return execute(HttpUtils.HttpRequest.build(reqUrl, method).setBody(toString(body)).setHeaders(toMap(headers)));
+        String bodyStr = eval(toString(body));
+        return execute(HttpUtils.HttpRequest.build(reqUrl, method).setBody(bodyStr).setHeaders(toMap(headers)));
     }
 
     public Object postJson(String url, Object json) {
         String reqUrl = eval(url);
-        String body = toString(json);
+        String body = eval(toString(json));
         return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_JSON));
     }
 
     public Object postFormData(String url, String body) {
         String reqUrl = eval(url);
-        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_FORM_DATA));
+        return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(eval(body)).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_FORM_DATA));
     }
 
     public Object postFormDataByParam(String url, Object formDataParams, Object headers) {
         String reqUrl = eval(url);
         Map<String, String> formMap = toMap(formDataParams);
         Map<String, String> headerMap = toMap(headers);
-        String body = buildLinks(formMap);
+        String body = eval(buildLinks(formMap));
         return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(body).setHeaders(headerMap).addHeaders(HttpUtils.CONTENT_TYPE, HttpUtils.CONTENT_TYPE_FORM_DATA));
     }
 
@@ -99,7 +100,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
 
     public Object post(String url, Object body, Object headers) {
         String reqUrl = eval(url);
-        String bodyStr = toString(body);
+        String bodyStr = eval(toString(body));
         Map<String, String> headerMap = toMap(headers);
         return execute(HttpUtils.HttpRequest.build(reqUrl, "POST").setBody(bodyStr).setHeaders(headerMap));
     }
@@ -158,7 +159,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         if (!JavaScriptUtils.isNull(data)) {
             data = JavaScriptUtils.toJavaObject(data);
         }
-        if (!(data instanceof String)) {
+        if (data != null && !(data instanceof String)) {
             data = JSON.toJSONString(data);
         }
         return (String) data;
@@ -185,6 +186,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     }
 
     private Object execute(ApiRequestPO requestPO, HttpUtils.HttpRequest request) {
+        scriptContext.requestProcessor(request);
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         boolean openReqLog = projectConfig != null && Constants.YES.equals(projectConfig.getOpenReqLog());
         ApiLogPO apiLogPO = scriptContext.buildApiLog(requestPO);
@@ -199,6 +201,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             }
             Object result = handleResponse(response.getResponse());
             apiLogPO.setExecTime((int) (System.currentTimeMillis() - timeMillis));
+            scriptContext.responseProcessor(result, response.getStatus(), apiLogPO);
             return result;
         } catch (Exception e) {
             log.error("请求接口失败: " + request.getUrl(), e);
