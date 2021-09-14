@@ -89,7 +89,7 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
                 Constants.YES.equals(apiExecuteStrategyPO.getIsAvailable()) &&
                 Constants.NO.equals(apiExecuteStrategyPO.getIsDeleted())) {
             final ApiExecuteStrategyPO strategyPO = apiExecuteStrategyPO;
-            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runWithTx(strategyPO), apiExecuteStrategyPO.getJobCron());
+            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO), apiExecuteStrategyPO.getJobCron());
         } else {
             ScheduledConfig.removeCronTask(key);
         }
@@ -129,28 +129,48 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        // 加载所有策略定时任务
-        ApiExecuteStrategyPO apiExecuteStrategyPO = new ApiExecuteStrategyPO();
-        apiExecuteStrategyPO.setIsAvailable(Constants.YES);
-        apiExecuteStrategyPO.setType(ApiExecuteStrategyPO.STRATEGY_JOB);
-        List<ApiExecuteStrategyPO> list = list(apiExecuteStrategyPO);
+    public List<ApiExecuteStrategyPO> queryCronExecutableStrategy(Integer projectId) {
+        return apiExecuteStrategyMapper.queryCronExecutableStrategy(projectId);
+    }
+
+    @Override
+    public void triggerCronUpdate(Integer projectId, boolean isAdd) {
+        List<ApiExecuteStrategyPO> list;
+        if (isAdd) {
+            // 新增: 查询可用
+            list = queryCronExecutableStrategy(projectId);
+        } else {
+            // 移除: 查询所有
+            ApiExecuteStrategyPO strategyPO = new ApiExecuteStrategyPO();
+            strategyPO.setProjectId(projectId);
+            strategyPO.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
+            list = list(strategyPO);
+        }
         for (ApiExecuteStrategyPO strategyPO : list) {
-            if (strategyPO.getJobCron() == null) {
-                log.error("策略 {} jobCron为空", strategyPO.getName());
-                continue;
-            }
             try {
-                ScheduledConfig.addCronTask(ScheduledConfig.key(strategyPO.getClass(), strategyPO.getId()), () -> SpringBeanUtils.getBean(getClass()).runWithTx(strategyPO), strategyPO.getJobCron());
+                String key = ScheduledConfig.key(strategyPO.getClass(), strategyPO.getId());
+                if (isAdd) {
+                    ScheduledConfig.addCronTask(
+                            key,
+                            () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO),
+                            strategyPO.getJobCron());
+                } else {
+                    ScheduledConfig.removeCronTask(key);
+                }
             } catch (Exception e) {
-                log.error("添加策略任务失败, id = {}, jobCron = {}", strategyPO.getId(), strategyPO.getJobCron(), e);
+                log.error("触发更新策略任务失败, id = {}, jobCron = {}", strategyPO.getId(), strategyPO.getJobCron(), e);
             }
         }
     }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        this.triggerCronUpdate(null, true);
+    }
+
     @Async
     @Override
-    public void runWithTx(ApiExecuteStrategyPO strategy) {
+    public void runStrategy(ApiExecuteStrategyPO strategy) {
         strategyExecutor.run(strategy);
     }
 

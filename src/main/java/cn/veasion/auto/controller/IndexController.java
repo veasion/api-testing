@@ -66,7 +66,7 @@ public class IndexController {
 
         for (int i = 6; i >= 0; i--) {
             calendar = Calendar.getInstance();
-            calendar.add(Calendar.DAY_OF_MONTH, i);
+            calendar.add(Calendar.DAY_OF_MONTH, -i);
             String date = DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd");
             dayList.add(date);
             Map<String, Object> dayCountMap = dayMap.get(date);

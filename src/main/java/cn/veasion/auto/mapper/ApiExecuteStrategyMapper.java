@@ -2,6 +2,8 @@ package cn.veasion.auto.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -48,6 +50,14 @@ public interface ApiExecuteStrategyMapper {
      */
     List<ApiExecuteStrategyPO> queryList(ApiExecuteStrategyPO apiExecuteStrategyPO);
 
+    /**
+     * 查询可执行策略
+     */
+    List<ApiExecuteStrategyPO> queryCronExecutableStrategy(@Param("projectId") Integer projectId);
+
+    /**
+     * 查询根据 ids
+     */
     List<ApiExecuteStrategyPO> queryByIds(List<Integer> ids);
 
 }

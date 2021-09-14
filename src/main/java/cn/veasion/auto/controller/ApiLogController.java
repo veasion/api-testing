@@ -45,8 +45,8 @@ public class ApiLogController extends BaseController {
     }
 
     @GetMapping("/queryByStrategyId")
-    public Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId) {
-        return Page.ok(apiLogService.queryByStrategyId(executeStrategyId, logId, 1, Constants.MAX_CODE_SIZE));
+    public Page<ApiLogPO> queryByStrategyId(Integer strategyId, String logId) {
+        return Page.ok(apiLogService.queryByStrategyId(strategyId, logId, 1, Constants.MAX_CODE_SIZE));
     }
 
     @GetMapping("/pressureResult")

@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class ScriptContext {
 
-    private String refId;
+    private ApiLogPO refLog;
     private Integer projectId;
     private ProjectPO project;
     private ApiExecuteStrategyPO strategy;
@@ -32,12 +32,8 @@ public class ScriptContext {
     private List<RequestProcessor> requestProcessors = new ArrayList<>();
     private List<ResponseProcessor> responseProcessors = new ArrayList<>();
 
-    public String getRefId() {
-        return refId;
-    }
-
-    void setRefId(String refId) {
-        this.refId = refId;
+    public ApiLogPO getRefLog() {
+        return refLog;
     }
 
     public Integer getProjectId() {
@@ -82,13 +78,17 @@ public class ScriptContext {
     }
 
     public ApiLogPO buildApiLog(ApiRequestPO requestPO) {
-        return buildApiLog(requestPO, true);
+        return buildApiLog(requestPO, false);
     }
 
-    public ApiLogPO buildApiLog(ApiRequestPO requestPO, boolean batch) {
+    public ApiLogPO buildApiLog(ApiRequestPO requestPO, boolean refLog) {
         ApiLogPO apiLog = new ApiLogPO();
         apiLog.init();
-        apiLog.setRefId(refId == null ? "0" : refId);
+        if (refLog) {
+            apiLog.setRefId("0");
+        } else if (this.refLog != null) {
+            apiLog.setRefId(this.refLog.getId());
+        }
         apiLog.setProjectId(projectId);
         if (strategy != null) {
             apiLog.setExecuteStrategyId(strategy.getId());
@@ -102,7 +102,9 @@ public class ScriptContext {
             apiLog.setUrl(requestPO.getUrl());
         }
         apiLog.setStatus(ApiLogPO.STATUS_RUNNING);
-        if (batch) {
+        if (refLog) {
+            this.refLog = apiLog;
+        } else {
             synchronized (apiLogList) {
                 apiLogList.add(apiLog);
             }

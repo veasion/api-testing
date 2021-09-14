@@ -117,9 +117,9 @@ public class ApiLogServiceImpl implements ApiLogService {
     }
 
     @Override
-    public Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId, int pageIndex, int pageSize) {
+    public Page<ApiLogPO> queryByStrategyId(Integer strategyId, String logId, int pageIndex, int pageSize) {
         PageHelper.startPage(pageIndex, pageSize);
-        return (Page<ApiLogPO>) apiLogMapper.queryByStrategyId(executeStrategyId, logId);
+        return (Page<ApiLogPO>) apiLogMapper.queryByStrategyId(strategyId, logId);
     }
 
     @Override

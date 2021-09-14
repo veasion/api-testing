@@ -64,4 +64,16 @@ public class ApiLogPO extends BasePO<String> {
             setId(StringUtils.getUUID());
         }
     }
+
+    public synchronized void appendLog(String log) {
+        if (log == null) {
+            return;
+        }
+        if (this.msg == null) {
+            this.msg = log;
+        } else {
+            this.msg += "\r\n" + log;
+        }
+    }
+
 }

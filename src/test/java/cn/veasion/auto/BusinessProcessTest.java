@@ -47,7 +47,6 @@ public class BusinessProcessTest extends BaseTest {
         ProjectPO projectPO = new ProjectPO();
         projectPO.setName("测试项目" + randCode());
         projectPO.setDescription("描述");
-        projectPO.setEmail("veasion@qq.com");
         projectPO.setIsAvailable(1);
 
         JSONObject data = postRequest("/api/project/add", projectPO);

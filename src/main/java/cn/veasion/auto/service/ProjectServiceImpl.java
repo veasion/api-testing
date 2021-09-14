@@ -7,6 +7,7 @@ import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.utils.Constants;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -25,6 +26,9 @@ public class ProjectServiceImpl implements ProjectService {
     private ProjectMapper projectMapper;
     @Resource
     private ProjectConfigMapper projectConfigMapper;
+    @Lazy
+    @Resource
+    private ApiExecuteStrategyService apiExecuteStrategyService;
 
     @Override
     public ProjectPO getById(int id) {
@@ -47,8 +51,14 @@ public class ProjectServiceImpl implements ProjectService {
             projectPO.init();
             projectMapper.insert(projectPO);
         } else {
+            ProjectPO old = projectMapper.queryById(projectPO.getId());
             projectPO.setUpdateTime(new Date());
             projectMapper.update(projectPO);
+            if (Constants.YES.equals(projectPO.getIsDeleted())) {
+                apiExecuteStrategyService.triggerCronUpdate(projectPO.getId(), false);
+            } else if (projectPO.getIsAvailable() != null && !projectPO.getIsAvailable().equals(old.getIsAvailable())) {
+                apiExecuteStrategyService.triggerCronUpdate(projectPO.getId(), Constants.YES.equals(projectPO.getIsAvailable()));
+            }
         }
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         if (projectConfig != null) {
@@ -69,6 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectConfigPO != null) {
             projectConfigMapper.deleteById(projectConfigPO.getId());
         }
+        apiExecuteStrategyService.triggerCronUpdate(id, false);
         return projectMapper.deleteById(id);
     }
 }

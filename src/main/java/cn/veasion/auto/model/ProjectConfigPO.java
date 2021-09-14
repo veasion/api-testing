@@ -23,21 +23,21 @@ public class ProjectConfigPO extends BasePO<Integer> {
      */
     private Integer openReqLog;
     /**
-     * 全局变量
+     * 全局变量（脚本中可以通过${xxx}方式使用全局变量）
      */
     private String globalVarJson;
     /**
-     * 脚本: 策略异常执行
-     */
-    private String exceptionScript;
-    /**
-     * 脚本: 策略执行前
+     * 前置脚本（策略开始前执行，用来设置登录信息和拦截修改请求响应）
      */
     private String beforeScript;
     /**
-     * 脚本: 策略执行后
+     * 后置脚本（策略正常结束后执行，用来监听脚本执行情况，发送邮件通知等）
      */
     private String afterScript;
+    /**
+     * 异常执行脚本（策略代码异常时执行）
+     */
+    private String exceptionScript;
 
     public JSONObject toGlobalVarJson() {
         if (StringUtils.hasText(globalVarJson)) {

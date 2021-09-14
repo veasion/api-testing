@@ -118,6 +118,15 @@
         order by id desc
     </select>
 
+    <select id="queryCronExecutableStrategy" resultType="cn.veasion.auto.model.ApiExecuteStrategyPO">
+        select t.* from api_execute_strategy t inner join project p
+        on t.project_id = p.id and p.is_deleted = 0 and p.is_available = 1
+        where t.is_deleted = 0 and t.is_available = 1 and t.strategy = 1 and t.job_cron is not null
+        <if test="projectId != null">
+            and t.project_id = #{projectId}
+        </if>
+    </select>
+
     <select id="queryByIds" resultType="cn.veasion.auto.model.ApiExecuteStrategyPO">
         select * from api_execute_strategy t where is_deleted = 0
         and id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>

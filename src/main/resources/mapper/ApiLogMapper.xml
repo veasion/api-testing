@@ -120,7 +120,7 @@
 
     <select id="queryByStrategyId" resultType="cn.veasion.auto.model.ApiLogPO">
         select * from api_log where is_deleted = 0 and ref_id = '0'
-        and execute_strategy_id = #{executeStrategyId}
+        and execute_strategy_id = #{strategyId}
         <if test="logId != null">
             and id = #{logId}
         </if>

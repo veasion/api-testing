@@ -17,7 +17,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -80,26 +82,52 @@ public class ScriptExecutor {
     /**
      * 执行脚本
      */
-    public Object executeScript(String script, ScriptContext scriptContext) {
+    public Object tryExecuteScript(String script, ScriptContext scriptContext) {
+        try {
+            return executeScript(script, scriptContext, null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 执行脚本
+     */
+    public Object executeScript(String script, ScriptContext scriptContext) throws ScriptException {
+        return executeScript(script, scriptContext, null);
+    }
+
+    /**
+     * 执行脚本
+     */
+    public Object executeScript(String script, ScriptContext scriptContext, Map<String, Object> params) throws ScriptException {
         try {
             scriptContext.getThreadLocalCase().set(null);
-            return getScriptEngine(scriptContext).eval(script);
+            ScriptEngine scriptEngine = getScriptEngine(scriptContext);
+            if (params != null && params.size() > 0) {
+                for (Map.Entry<String, Object> entry : params.entrySet()) {
+                    scriptContext.getEnv().put(entry.getKey(), entry.getValue());
+                }
+            }
+            return scriptEngine.eval(script);
         } catch (Exception e) {
             log.error("执行脚本失败，script: {}", script, e);
-            return null;
+            throw e;
+        } finally {
+            scriptContext.getEnv().reset();
         }
     }
 
     /**
      * 执行策略脚本
      */
-    public Object execute(ApiExecuteStrategyPO strategyPO, ScriptContext scriptContext) {
+    public Object execute(ApiExecuteStrategyPO strategyPO, ScriptContext scriptContext) throws ScriptException {
         try {
             scriptContext.getThreadLocalCase().set(null);
             return getScriptEngine(scriptContext).eval(strategyPO.getScript());
         } catch (Exception e) {
             log.error("执行脚本失败，策略: {}", strategyPO.getName(), e);
-            return null;
+            throw e;
         } finally {
             scriptContext.getEnv().reset();
         }
@@ -108,13 +136,13 @@ public class ScriptExecutor {
     /**
      * 执行用例脚本
      */
-    public Object execute(ApiTestCasePO testCasePO, ScriptContext scriptContext) {
+    public Object execute(ApiTestCasePO testCasePO, ScriptContext scriptContext) throws ScriptException {
         try {
             scriptContext.getThreadLocalCase().set(testCasePO);
             return getScriptEngine(scriptContext).eval(testCasePO.getScript());
         } catch (Exception e) {
             log.error("执行脚本失败，用例: {}", testCasePO.getCaseName(), e);
-            return null;
+            throw e;
         } finally {
             scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();
@@ -124,14 +152,14 @@ public class ScriptExecutor {
     /**
      * 执行单个请求
      */
-    public Object execute(ApiRequestPO apiRequestPO, ScriptContext scriptContext) {
+    public Object execute(ApiRequestPO apiRequestPO, ScriptContext scriptContext) throws ScriptException {
         String apiName = apiRequestPO.getApiName();
         try {
             scriptContext.getThreadLocalCase().set(null);
             return getScriptEngine(scriptContext).eval(String.format("http.request('%s')", apiName));
         } catch (Exception e) {
             log.error("执行脚本失败，apiName: {}", apiName, e);
-            return null;
+            throw e;
         } finally {
             scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();

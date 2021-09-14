@@ -56,7 +56,7 @@ public interface ApiLogMapper {
     /**
      * 根据策略ID查询单策略执行日志
      */
-    List<ApiLogPO> queryByStrategyId(@Param("executeStrategyId") Integer executeStrategyId, @Param("logId") String logId);
+    List<ApiLogPO> queryByStrategyId(@Param("strategyId") Integer strategyId, @Param("logId") String logId);
 
     /**
      * 统计各状态数量

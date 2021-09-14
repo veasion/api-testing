@@ -5,12 +5,12 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into project
         (
-            name, description, email, is_available, 
+            name, description, is_available,
             is_deleted, create_username, create_time, update_time
         )
         values
         (
-            #{name}, #{description}, #{email}, #{isAvailable}, 
+            #{name}, #{description}, #{isAvailable},
             #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
     </insert>
@@ -18,13 +18,13 @@
     <insert id="insertAll">
         insert into project
         (
-            name, description, email, is_available, 
+            name, description, is_available,
             is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.name}, #{obj.description}, #{obj.email}, #{obj.isAvailable}, 
+            #{obj.name}, #{obj.description}, #{obj.isAvailable},
             #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
@@ -38,9 +38,6 @@
             </if>
             <if test="description != null">
                 description = #{description},
-            </if>
-            <if test="email != null">
-                email = #{email},
             </if>
             <if test="isAvailable != null">
                 is_available = #{isAvailable},
@@ -66,7 +63,6 @@
         <set>
             name = #{name},
             description = #{description},
-            email = #{email},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_username = #{createUsername},

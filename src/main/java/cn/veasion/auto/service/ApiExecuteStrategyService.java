@@ -30,6 +30,10 @@ public interface ApiExecuteStrategyService {
 
     int delete(int id);
 
-    void runWithTx(ApiExecuteStrategyPO strategy);
+    List<ApiExecuteStrategyPO> queryCronExecutableStrategy(Integer projectId);
+
+    void triggerCronUpdate(Integer projectId, boolean isAdd);
+
+    void runStrategy(ApiExecuteStrategyPO strategy);
 
 }

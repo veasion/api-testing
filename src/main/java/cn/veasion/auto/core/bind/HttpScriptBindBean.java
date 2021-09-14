@@ -192,12 +192,13 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         ApiLogPO apiLogPO = scriptContext.buildApiLog(requestPO);
         apiLogPO.setUrl(request.getUrl());
         long timeMillis = System.currentTimeMillis();
+        HttpUtils.HttpResponse response = null;
         try {
-            HttpUtils.HttpResponse response = HttpUtils.request(request);
+            response = HttpUtils.request(request);
             apiLogPO.setTime((int) response.getReqTime());
             apiLogPO.setStatus(response.success() ? ApiLogPO.STATUS_SUC : ApiLogPO.STATUS_FAIL);
             if (openReqLog) {
-                apiLogPO.setMsg(buildReqLog(request, response));
+                apiLogPO.appendLog(buildReqLog(request, response));
             }
             Object result = handleResponse(response.getResponse());
             apiLogPO.setExecTime((int) (System.currentTimeMillis() - timeMillis));
@@ -207,9 +208,9 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             log.error("请求接口失败: " + request.getUrl(), e);
             String msg = e.getClass().getSimpleName() + ": " + e.getMessage();
             if (openReqLog) {
-                apiLogPO.setMsg(buildReqLog(request, null) + "\n\n" + msg);
+                apiLogPO.appendLog(buildReqLog(request, response) + "\n\n" + msg);
             } else {
-                apiLogPO.setMsg(msg);
+                apiLogPO.appendLog(msg);
             }
             apiLogPO.setTime((int) (System.currentTimeMillis() - timeMillis));
             apiLogPO.setExecTime(apiLogPO.getTime());
@@ -242,7 +243,11 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         if (StringUtils.hasText(request.getMethod())) {
             sb.append(request.getMethod()).append(" ");
         }
-        sb.append(request.getUrl()).append("\r\n");
+        sb.append(request.getUrl());
+        if (response != null) {
+            sb.append("\t[").append(response.getStatus()).append("]");
+        }
+        sb.append("\r\n");
         if (request.getHeaders() != null && request.getHeaders().size() > 0) {
             for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
                 sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
@@ -253,9 +258,6 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             sb.append(request.getBody()).append("\r\n\r\n");
         }
         if (response != null) {
-            sb.append("\r\n");
-            sb.append("status: ").append(response.getStatus());
-            sb.append("\n\n======response======\n\n");
             sb.append(response.getResponse());
         }
         return sb.toString();

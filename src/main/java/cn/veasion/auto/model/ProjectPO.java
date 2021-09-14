@@ -19,10 +19,6 @@ public class ProjectPO extends BasePO<Integer> {
      * 项目描述
      */
     private String description;
-    /**
-     * 邮箱
-     */
-    private String email;
 
     /**
      * 项目配置

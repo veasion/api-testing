@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.script.ScriptException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -49,9 +50,8 @@ public class StrategyExecutor {
         ScriptContext scriptContext = scriptExecutor.createScriptContext(strategy.getProjectId());
         scriptContext.setStrategy(strategy);
 
-        ApiLogPO apiLog = scriptContext.buildApiLog(null, false);
-        apiLogService.addWithNewTx(apiLog);
-        scriptContext.setRefId(apiLog.getId());
+        ApiLogPO refLog = scriptContext.buildApiLog(null, true);
+        apiLogService.addWithNewTx(refLog);
 
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         long timeMillis = System.currentTimeMillis();
@@ -61,28 +61,28 @@ public class StrategyExecutor {
             }
             if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(strategy.getStrategy())) {
                 // 压测
-                apiLog.setStatus(null);
-                runPressure(strategy, scriptContext, apiLog);
-                if (apiLog.getStatus() == null) {
-                    apiLog.setStatus(ApiLogPO.STATUS_SUC);
+                refLog.setStatus(null);
+                runPressure(scriptContext);
+                if (refLog.getStatus() == null) {
+                    refLog.setStatus(ApiLogPO.STATUS_SUC);
                 }
             } else {
                 // 普通执行
-                runStrategy(strategy, scriptContext);
-                apiLog.setStatus(ApiLogPO.STATUS_SUC);
+                runStrategy(scriptContext);
+                refLog.setStatus(ApiLogPO.STATUS_SUC);
             }
             if (StringUtils.hasText(projectConfig.getAfterScript())) {
-                scriptExecutor.executeScript(projectConfig.getAfterScript(), scriptContext);
+                scriptExecutor.tryExecuteScript(projectConfig.getAfterScript(), scriptContext);
             }
         } catch (Exception e) {
             log.error("执行异常，策略: {}", strategy.getName(), e);
             if (StringUtils.hasText(projectConfig.getExceptionScript())) {
-                scriptExecutor.executeScript(projectConfig.getExceptionScript(), scriptContext);
+                scriptExecutor.tryExecuteScript(projectConfig.getExceptionScript(), scriptContext);
             }
-            apiLog.setMsg(e.getMessage());
-            apiLog.setStatus(ApiLogPO.STATUS_FAIL);
+            refLog.appendLog(e.getMessage());
+            refLog.setStatus(ApiLogPO.STATUS_FAIL);
         } finally {
-            apiLog.setExecTime((int) (System.currentTimeMillis() - timeMillis));
+            refLog.setExecTime((int) (System.currentTimeMillis() - timeMillis));
             List<ApiLogPO> batchLogs = scriptContext.getApiLogList();
             int totalTime = 0;
             for (ApiLogPO log : batchLogs) {
@@ -90,11 +90,11 @@ public class StrategyExecutor {
                     totalTime += log.getTime();
                 }
                 if (ApiLogPO.STATUS_FAIL.equals(log.getStatus())) {
-                    apiLog.setStatus(ApiLogPO.STATUS_FAIL);
+                    refLog.setStatus(ApiLogPO.STATUS_FAIL);
                 }
             }
-            apiLog.setTime(totalTime);
-            apiLogService.updateWithNewTx(apiLog);
+            refLog.setTime(totalTime);
+            apiLogService.updateWithNewTx(refLog);
             // 批量添加日志
             apiLogService.addAllWithNewTx(batchLogs);
             batchLogs.clear();
@@ -102,16 +102,26 @@ public class StrategyExecutor {
         }
     }
 
-    private void runStrategy(ApiExecuteStrategyPO strategy, ScriptContext scriptContext) {
+    /**
+     * 定时任务普通执行
+     */
+    private void runStrategy(ScriptContext scriptContext) throws ScriptException {
+        ApiExecuteStrategyPO strategy = scriptContext.getStrategy();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(strategy.getType());
         if (script) {
             scriptExecutor.execute(strategy, scriptContext);
         } else {
-            loadCase(strategy, casePO -> scriptExecutor.execute(casePO, scriptContext));
+            ApiLogPO exceptionLog = new ApiLogPO();
+            executeTestCaseAll(scriptContext, exceptionLog);
+            scriptContext.getRefLog().appendLog(exceptionLog.getMsg());
         }
     }
 
-    private void runPressure(ApiExecuteStrategyPO strategy, ScriptContext scriptContext, ApiLogPO apiLog) throws Exception {
+    /**
+     * 压测
+     */
+    private void runPressure(ScriptContext scriptContext) throws Exception {
+        ApiExecuteStrategyPO strategy = scriptContext.getStrategy();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(strategy.getType());
         int threadCount = Optional.ofNullable(strategy.getThreadCount()).orElse(1);
         ApiExecuteStrategyPO.ThreadStrategy threadStrategy = strategy.toThreadStrategy();
@@ -120,16 +130,17 @@ public class StrategyExecutor {
         }
         long intervalInMillis = Optional.ofNullable(threadStrategy.getIntervalInMillis()).orElse(-1L);
         boolean isTime = ApiExecuteStrategyPO.THREAD_STRATEGY_TIME.equals(threadStrategy.getType());
+        ApiLogPO exceptionLog = new ApiLogPO();
         Callable<?> task = () -> {
             try {
                 if (script) {
                     scriptExecutor.execute(strategy, scriptContext);
                 } else {
-                    loadCase(strategy, casePO -> scriptExecutor.execute(casePO, scriptContext));
+                    executeTestCaseAll(scriptContext, exceptionLog);
                 }
             } catch (Exception e) {
-                apiLog.setMsg(e.getMessage());
-                apiLog.setStatus(ApiLogPO.STATUS_FAIL);
+                scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
+                exceptionLog.setMsg(e.getClass().getSimpleName() + ": " + e.getMessage());
             }
             return null;
         };
@@ -144,7 +155,21 @@ public class StrategyExecutor {
         } catch (Exception e) {
             log.error("压测异常，策略: {}", strategy.getName(), e);
             throw e;
+        } finally {
+            scriptContext.getRefLog().appendLog(exceptionLog.getMsg());
         }
+    }
+
+    private void executeTestCaseAll(ScriptContext scriptContext, ApiLogPO exceptionLog) {
+        loadCase(scriptContext.getStrategy(), casePO -> {
+            try {
+                scriptExecutor.execute(casePO, scriptContext);
+            } catch (ScriptException e) {
+                log.error("执行case脚本异常，caseName: {}", casePO.getCaseName(), e);
+                scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
+                exceptionLog.setMsg(e.getClass().getSimpleName() + ": " + e.getMessage());
+            }
+        });
     }
 
     private void loadCase(ApiExecuteStrategyPO strategy, Consumer<ApiTestCasePO> consumer) {

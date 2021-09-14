@@ -31,7 +31,7 @@ public interface ApiLogService {
     /**
      * 根据策略ID查询单策略执行日志
      */
-    Page<ApiLogPO> queryByStrategyId(Integer executeStrategyId, String logId, int pageIndex, int pageSize);
+    Page<ApiLogPO> queryByStrategyId(Integer strategyId, String logId, int pageIndex, int pageSize);
 
     /**
      * 统计各状态数量
