@@ -3,6 +3,7 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiRequestMapper;
 import cn.veasion.auto.model.ApiRequestPO;
+import cn.veasion.auto.model.ApiRequestVO;
 import cn.veasion.auto.utils.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
@@ -35,9 +36,9 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     }
 
     @Override
-    public Page<ApiRequestPO> listPage(ApiRequestPO apiRequestPO, int pageIndex, int pageSize) {
+    public Page<ApiRequestVO> listPage(ApiRequestVO apiRequestVO, int pageIndex, int pageSize) {
         PageHelper.startPage(pageIndex, pageSize);
-        return (Page<ApiRequestPO>) apiRequestMapper.queryList(apiRequestPO);
+        return (Page<ApiRequestVO>) apiRequestMapper.queryList(apiRequestVO);
     }
 
     @Override

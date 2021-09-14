@@ -186,11 +186,21 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     }
 
     private Object execute(ApiRequestPO requestPO, HttpUtils.HttpRequest request) {
+        String url = request.getUrl();
+        if (url.startsWith("/")) {
+            String baseUrl = (String) scriptContext.getEnv().getGlobal(Constants.BASE_URL_KEY);
+            if (StringUtils.hasText(baseUrl)) {
+                url = baseUrl.trim() + url;
+            }
+        } else if (!url.startsWith("http")) {
+            url = Constants.DEFAULT_HTTP_PROTOCOL + url.trim();
+        }
+        request.setUrl(url);
         scriptContext.requestProcessor(request);
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         boolean openReqLog = projectConfig != null && Constants.YES.equals(projectConfig.getOpenReqLog());
         ApiLogPO apiLogPO = scriptContext.buildApiLog(requestPO);
-        apiLogPO.setUrl(request.getUrl());
+        apiLogPO.setUrl(url);
         long timeMillis = System.currentTimeMillis();
         HttpUtils.HttpResponse response = null;
         try {
@@ -205,10 +215,10 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             scriptContext.responseProcessor(result, response.getStatus(), apiLogPO);
             return result;
         } catch (Exception e) {
-            log.error("请求接口失败: " + request.getUrl(), e);
+            log.error("请求接口失败: " + url, e);
             String msg = e.getClass().getSimpleName() + ": " + e.getMessage();
             if (openReqLog) {
-                apiLogPO.appendLog(buildReqLog(request, response) + "\n\n" + msg);
+                apiLogPO.appendLog(buildReqLog(request, response) + Constants.LINE + msg);
             } else {
                 apiLogPO.appendLog(msg);
             }
@@ -239,7 +249,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     }
 
     private String buildReqLog(HttpUtils.HttpRequest request, HttpUtils.HttpResponse response) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(Constants.LINE);
         if (StringUtils.hasText(request.getMethod())) {
             sb.append(request.getMethod()).append(" ");
         }
@@ -247,18 +257,17 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         if (response != null) {
             sb.append("\t[").append(response.getStatus()).append("]");
         }
-        sb.append("\r\n");
         if (request.getHeaders() != null && request.getHeaders().size() > 0) {
             for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
+                sb.append(Constants.LINE).append(entry.getKey()).append(": ").append(entry.getValue());
             }
         }
-        sb.append("\r\n");
-        if (request.getBody() != null) {
-            sb.append(request.getBody()).append("\r\n\r\n");
+        sb.append(Constants.LINE);
+        if (request.getBody() != null && !"".equals(request.getBody())) {
+            sb.append(Constants.LINE).append(request.getBody()).append(Constants.LINE);
         }
         if (response != null) {
-            sb.append(response.getResponse());
+            sb.append(Constants.LINE).append(response.getResponse());
         }
         return sb.toString();
     }

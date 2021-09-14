@@ -8,8 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -270,6 +272,15 @@ public class EvalAnalysisUtils {
             return getMethod.invoke(object, key);
         }
         return null;
+    }
+
+    public static Set<String> matcherKeys(String str) {
+        Set<String> keys = new HashSet<>();
+        Matcher matcher = EL_PATTERN.matcher(str);
+        while (matcher.find()) {
+            keys.add(matcher.group(1).trim());
+        }
+        return keys;
     }
 
 }

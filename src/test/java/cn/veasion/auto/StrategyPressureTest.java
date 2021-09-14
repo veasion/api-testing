@@ -2,6 +2,7 @@ package cn.veasion.auto;
 
 import cn.veasion.auto.core.StrategyExecutor;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.service.ApiExecuteStrategyService;
@@ -45,27 +46,27 @@ public class StrategyPressureTest extends BaseTest {
             return;
         }
         ProjectPO projectPO = projects.get(0);
-        ApiExecuteStrategyPO strategyPO = new ApiExecuteStrategyPO();
-        strategyPO.setProjectId(projectPO.getId());
-        strategyPO.setName("策略_脚本_压测");
-        strategyPO.setDesc("压测脚本");
-        strategyPO.setType(ApiExecuteStrategyPO.TYPE_SCRIPT);
-        strategyPO.setStrategy(ApiExecuteStrategyPO.STRATEGY_PRESSURE);
-        strategyPO.setScript("http.get('${baseUrl}/index.html');");
+        ApiExecuteStrategyVO strategy = new ApiExecuteStrategyVO();
+        strategy.setProjectId(projectPO.getId());
+        strategy.setName("策略_脚本_压测");
+        strategy.setDesc("压测脚本");
+        strategy.setType(ApiExecuteStrategyPO.TYPE_SCRIPT);
+        strategy.setStrategy(ApiExecuteStrategyPO.STRATEGY_PRESSURE);
+        strategy.setScript("http.get('${baseUrl}/index.html');");
         // 10个并发压测20秒
-        strategyPO.setThreadCount(10);
+        strategy.setThreadCount(10);
         ApiExecuteStrategyPO.ThreadStrategy threadStrategy = new ApiExecuteStrategyPO.ThreadStrategy();
         threadStrategy.setType(ApiExecuteStrategyPO.THREAD_STRATEGY_TIME);
         threadStrategy.setTimeInMillis(20 * 1000L);
-        strategyPO.setThreadStrategyJson(JSONObject.toJSONString(threadStrategy));
-        strategyPO.setIsAvailable(1);
-        apiExecuteStrategyService.saveOrUpdate(strategyPO);
-        Assertions.assertNotNull(strategyPO.getId());
-        strategyExecutor.run(strategyPO);
+        strategy.setThreadStrategyJson(JSONObject.toJSONString(threadStrategy));
+        strategy.setIsAvailable(1);
+        apiExecuteStrategyService.saveOrUpdate(strategy);
+        Assertions.assertNotNull(strategy.getId());
+        strategyExecutor.run(strategy);
         Thread.sleep(1500);
-        Page<ApiLogPO> page = apiLogService.queryByStrategyId(strategyPO.getId(), null, 1, 1);
+        Page<ApiLogPO> page = apiLogService.queryByStrategyId(strategy.getId(), null, 1, 1);
         System.out.println("策略执行日志：\n" + JSONObject.toJSONString(page, SerializerFeature.PrettyFormat));
-        Map<String, Object> pressureResult = apiLogService.pressureResult(strategyPO.getId(), page.get(0).getId());
+        Map<String, Object> pressureResult = apiLogService.pressureResult(strategy.getId(), page.get(0).getId());
         System.out.println("压测结果分析：\n" + JSONObject.toJSONString(pressureResult, SerializerFeature.PrettyFormat));
     }
 

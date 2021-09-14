@@ -1,6 +1,8 @@
 package cn.veasion.auto.core.bind;
 
 import cn.veasion.auto.exception.ScriptException;
+import cn.veasion.auto.utils.EvalAnalysisUtils;
+import cn.veasion.auto.utils.JavaScriptUtils;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.objects.NativeDate;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,10 @@ import java.util.Random;
 public class CommonScriptBindBean extends AbstractScriptBindBean {
 
     private static final Random RAND = new Random(System.currentTimeMillis());
+
+    public Object eval(String str, Object obj) {
+        return EvalAnalysisUtils.eval(str, JavaScriptUtils.toJavaObject(obj));
+    }
 
     public String randCode(Integer length) {
         if (length == null) {

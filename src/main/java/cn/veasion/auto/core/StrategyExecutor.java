@@ -5,6 +5,7 @@ import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiTestCasePO;
+import cn.veasion.auto.model.ApiTestCaseVO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.service.ApiLogService;
 import cn.veasion.auto.service.ApiTestCaseService;
@@ -174,12 +175,12 @@ public class StrategyExecutor {
 
     private void loadCase(ApiExecuteStrategyPO strategy, Consumer<ApiTestCasePO> consumer) {
         if (ApiExecuteStrategyPO.TYPE_ALL_CASE.equals(strategy.getType())) {
-            ApiTestCasePO apiTestCasePO = new ApiTestCasePO();
-            apiTestCasePO.setProjectId(strategy.getProjectId());
-            apiTestCasePO.setIsAvailable(Constants.YES);
+            ApiTestCaseVO apiTestCaseVO = new ApiTestCaseVO();
+            apiTestCaseVO.setProjectId(strategy.getProjectId());
+            apiTestCaseVO.setIsAvailable(Constants.YES);
             int pageIndex = 1, pageSize = 100;
             while (true) {
-                Page<ApiTestCasePO> page = apiTestCaseService.listPage(apiTestCasePO, pageIndex++, pageSize);
+                Page<ApiTestCaseVO> page = apiTestCaseService.listPage(apiTestCaseVO, pageIndex++, pageSize);
                 page.forEach(consumer);
                 if (page.isEmpty() || page.getTotal() < pageSize) {
                     break;

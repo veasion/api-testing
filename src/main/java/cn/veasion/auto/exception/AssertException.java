@@ -1,22 +1,22 @@
 package cn.veasion.auto.exception;
 
 /**
- * ApiRequestException
+ * AssertException
  *
  * @author luozhuowei
  * @date 2021/9/10
  */
-public class ApiRequestException extends RuntimeException {
+public class AssertException extends RuntimeException {
 
-    public ApiRequestException(String message) {
+    public AssertException(String message) {
         super(message);
     }
 
-    public ApiRequestException(String message, Throwable cause) {
+    public AssertException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ApiRequestException(Throwable cause) {
+    public AssertException(Throwable cause) {
         super(cause);
     }
 

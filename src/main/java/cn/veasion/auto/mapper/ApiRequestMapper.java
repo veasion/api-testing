@@ -1,5 +1,6 @@
 package cn.veasion.auto.mapper;
 
+import cn.veasion.auto.model.ApiRequestVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiRequestPO;
 import org.apache.ibatis.annotations.Param;
@@ -53,6 +54,6 @@ public interface ApiRequestMapper {
     /**
      * 查询list
      */
-    List<ApiRequestPO> queryList(ApiRequestPO apiRequestPO);
+    List<ApiRequestVO> queryList(ApiRequestVO apiRequestVO);
 
 }

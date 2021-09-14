@@ -1,6 +1,7 @@
 package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiTestCasePO;
+import cn.veasion.auto.model.ApiTestCaseVO;
 import com.github.pagehelper.Page;
 
 /**
@@ -13,7 +14,7 @@ public interface ApiTestCaseService {
 
     ApiTestCasePO getById(int id);
 
-    Page<ApiTestCasePO> listPage(ApiTestCasePO apiTestCasePO, int pageIndex, int pageSize);
+    Page<ApiTestCaseVO> listPage(ApiTestCaseVO apiTestCaseVO, int pageIndex, int pageSize);
 
     void saveOrUpdate(ApiTestCasePO apiTestCasePO);
 

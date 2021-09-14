@@ -1,5 +1,6 @@
 package cn.veasion.auto.model;
 
+import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.StringUtils;
 import lombok.Data;
 
@@ -72,7 +73,7 @@ public class ApiLogPO extends BasePO<String> {
         if (this.msg == null) {
             this.msg = log;
         } else {
-            this.msg += "\r\n" + log;
+            this.msg += Constants.LINE + log;
         }
     }
 

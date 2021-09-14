@@ -1,5 +1,6 @@
 package cn.veasion.auto.controller;
 
+import cn.veasion.auto.model.ApiRequestVO;
 import cn.veasion.auto.model.Page;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.R;
@@ -29,15 +30,15 @@ public class ApiRequestController extends BaseController {
     private ApiRequestService apiRequestService;
 
     @GetMapping("/listPage")
-    public Page<ApiRequestPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+    public Page<ApiRequestVO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
                                        @RequestParam(required = false, defaultValue = "10") int pageSize,
-                                       ApiRequestPO apiRequestPO) {
-        return Page.ok(apiRequestService.listPage(apiRequestPO, pageNo, pageSize));
+                                       ApiRequestVO apiRequestVO) {
+        return Page.ok(apiRequestService.listPage(apiRequestVO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
-    public R<List<ApiRequestPO>> list(ApiRequestPO apiRequestPO) {
-        return R.ok(apiRequestService.listPage(apiRequestPO, 1, Constants.MAX_CODE_SIZE));
+    public R<List<ApiRequestVO>> list(ApiRequestVO apiRequestVO) {
+        return R.ok(apiRequestService.listPage(apiRequestVO, 1, Constants.MAX_CODE_SIZE));
     }
 
     @GetMapping("/getById")

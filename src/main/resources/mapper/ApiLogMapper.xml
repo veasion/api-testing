@@ -147,8 +147,9 @@
     </select>
 
     <select id="listRanking" resultType="cn.veasion.auto.model.ApiRankingVO">
-        select t.*, api.api_name, api.api_desc, api.method
-        from api_log t left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
+        select t.*, p.name as projectName, api.api_name, api.api_desc, api.method from api_log t
+        inner join project p on t.project_id = p.id and p.is_deleted = 0
+        left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
         where t.is_deleted = 0 and t.ref_id &lt;&gt; '0'
         <include refid="whereSQL" />
         group by t.execute_strategy_id, t.url

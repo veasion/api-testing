@@ -1,5 +1,6 @@
 package cn.veasion.auto.mapper;
 
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import org.apache.ibatis.annotations.Param;
@@ -48,12 +49,12 @@ public interface ApiExecuteStrategyMapper {
     /**
      * 查询list
      */
-    List<ApiExecuteStrategyPO> queryList(ApiExecuteStrategyPO apiExecuteStrategyPO);
+    List<ApiExecuteStrategyVO> queryList(ApiExecuteStrategyVO apiExecuteStrategy);
 
     /**
      * 查询可执行策略
      */
-    List<ApiExecuteStrategyPO> queryCronExecutableStrategy(@Param("projectId") Integer projectId);
+    List<ApiExecuteStrategyVO> queryCronExecutableStrategy(@Param("projectId") Integer projectId);
 
     /**
      * 查询根据 ids

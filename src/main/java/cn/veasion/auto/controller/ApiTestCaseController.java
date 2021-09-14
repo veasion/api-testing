@@ -1,5 +1,6 @@
 package cn.veasion.auto.controller;
 
+import cn.veasion.auto.model.ApiTestCaseVO;
 import cn.veasion.auto.model.Page;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.R;
@@ -29,14 +30,14 @@ public class ApiTestCaseController extends BaseController {
     private ApiTestCaseService apiTestCaseService;
 
     @GetMapping("/listPage")
-    public Page<ApiTestCasePO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+    public Page<ApiTestCaseVO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
                                         @RequestParam(required = false, defaultValue = "10") int pageSize,
-                                        ApiTestCasePO apiTestCasePO) {
-        return Page.ok(apiTestCaseService.listPage(apiTestCasePO, pageNo, pageSize));
+                                        ApiTestCaseVO apiTestCaseVO) {
+        return Page.ok(apiTestCaseService.listPage(apiTestCaseVO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
-    public R<List<ApiTestCasePO>> list(ApiTestCasePO apiTestCase) {
+    public R<List<ApiTestCaseVO>> list(ApiTestCaseVO apiTestCase) {
         return R.ok(apiTestCaseService.listPage(apiTestCase, 1, Constants.MAX_CODE_SIZE));
     }
 

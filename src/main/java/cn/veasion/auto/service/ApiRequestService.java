@@ -1,6 +1,7 @@
 package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiRequestPO;
+import cn.veasion.auto.model.ApiRequestVO;
 import com.github.pagehelper.Page;
 
 /**
@@ -15,7 +16,7 @@ public interface ApiRequestService {
 
     ApiRequestPO queryByApiName(String apiName, Integer projectId);
 
-    Page<ApiRequestPO> listPage(ApiRequestPO apiRequestPO, int pageIndex, int pageSize);
+    Page<ApiRequestVO> listPage(ApiRequestVO apiRequestVO, int pageIndex, int pageSize);
 
     void saveOrUpdate(ApiRequestPO apiRequestPO);
 

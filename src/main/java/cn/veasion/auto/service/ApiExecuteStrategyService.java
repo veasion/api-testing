@@ -1,6 +1,7 @@
 package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import com.github.pagehelper.Page;
 
@@ -16,11 +17,11 @@ public interface ApiExecuteStrategyService {
 
     ApiExecuteStrategyPO getById(int id);
 
-    List<ApiExecuteStrategyPO> list(ApiExecuteStrategyPO apiExecuteStrategyPO);
+    List<ApiExecuteStrategyVO> list(ApiExecuteStrategyVO apiExecuteStrategy);
 
-    Page<ApiExecuteStrategyPO> listPage(ApiExecuteStrategyPO apiExecuteStrategyPO, int pageIndex, int pageSize);
+    Page<ApiExecuteStrategyVO> listPage(ApiExecuteStrategyVO apiExecuteStrategy, int pageIndex, int pageSize);
 
-    void saveOrUpdate(ApiExecuteStrategyPO apiExecuteStrategyPO);
+    void saveOrUpdate(ApiExecuteStrategyVO apiExecuteStrategy);
 
     List<ApiTestCasePO> listApiTestCase(int id);
 
@@ -30,7 +31,7 @@ public interface ApiExecuteStrategyService {
 
     int delete(int id);
 
-    List<ApiExecuteStrategyPO> queryCronExecutableStrategy(Integer projectId);
+    List<ApiExecuteStrategyVO> queryCronExecutableStrategy(Integer projectId);
 
     void triggerCronUpdate(Integer projectId, boolean isAdd);
 

@@ -1,5 +1,6 @@
 package cn.veasion.auto.controller;
 
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.Page;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
@@ -31,15 +32,15 @@ public class ApiExecuteStrategyController extends BaseController {
     private ApiExecuteStrategyService apiExecuteStrategyService;
 
     @GetMapping("/listPage")
-    public Page<ApiExecuteStrategyPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
-                                              @RequestParam(required = false, defaultValue = "10") int pageSize,
-                                              ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        return Page.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyPO, pageNo, pageSize));
+    public Page<ApiExecuteStrategyVO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                               @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                               ApiExecuteStrategyVO apiExecuteStrategyVO) {
+        return Page.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyVO, pageNo, pageSize));
     }
 
     @GetMapping("/list")
-    public R<List<ApiExecuteStrategyPO>> list(ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        return R.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyPO, 1, Constants.MAX_PAGE_SIZE));
+    public R<List<ApiExecuteStrategyVO>> list(ApiExecuteStrategyVO apiExecuteStrategyVO) {
+        return R.ok(apiExecuteStrategyService.listPage(apiExecuteStrategyVO, 1, Constants.MAX_PAGE_SIZE));
     }
 
     @GetMapping("/getById")
@@ -48,24 +49,24 @@ public class ApiExecuteStrategyController extends BaseController {
     }
 
     @PostMapping("/add")
-    public R<Object> add(@RequestBody ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        apiExecuteStrategyPO.setId(null);
-        if (apiExecuteStrategyPO.getIsAvailable() == null) {
-            apiExecuteStrategyPO.setIsAvailable(Constants.NO);
+    public R<Object> add(@RequestBody ApiExecuteStrategyVO apiExecuteStrategy) {
+        apiExecuteStrategy.setId(null);
+        if (apiExecuteStrategy.getIsAvailable() == null) {
+            apiExecuteStrategy.setIsAvailable(Constants.NO);
         }
-        checkNotNull("参数不能为空", apiExecuteStrategyPO::getName, apiExecuteStrategyPO::getProjectId, apiExecuteStrategyPO::getType, apiExecuteStrategyPO::getStrategy);
-        if (ApiExecuteStrategyPO.TYPE_SCRIPT.equals(apiExecuteStrategyPO.getType())) {
-            notEmpty(apiExecuteStrategyPO.getScript(), "脚本不能为空");
+        checkNotNull("参数不能为空", apiExecuteStrategy::getName, apiExecuteStrategy::getProjectId, apiExecuteStrategy::getType, apiExecuteStrategy::getStrategy);
+        if (ApiExecuteStrategyPO.TYPE_SCRIPT.equals(apiExecuteStrategy.getType())) {
+            notEmpty(apiExecuteStrategy.getScript(), "脚本不能为空");
         }
-        apiExecuteStrategyPO.setName(apiExecuteStrategyPO.getName().trim());
-        apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategyPO);
-        return R.ok(apiExecuteStrategyPO.getId());
+        apiExecuteStrategy.setName(apiExecuteStrategy.getName().trim());
+        apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategy);
+        return R.ok(apiExecuteStrategy.getId());
     }
 
     @PostMapping("/update")
-    public R<Object> update(@RequestBody ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        notNull(apiExecuteStrategyPO.getId(), "id不能为空");
-        apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategyPO);
+    public R<Object> update(@RequestBody ApiExecuteStrategyVO apiExecuteStrategy) {
+        notNull(apiExecuteStrategy.getId(), "id不能为空");
+        apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategy);
         return R.ok();
     }
 

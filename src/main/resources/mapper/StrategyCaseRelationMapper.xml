@@ -74,7 +74,11 @@
 
     <select id="queryApiTestCaseList" resultType="cn.veasion.auto.model.ApiTestCasePO">
         select atc.* from api_test_case atc, strategy_case_relation scr
-        where atc.is_deleted = 0 and scr.is_deleted = 0 and scr.case_id = atc.id and scr.execute_strategy_id = #{value}
+        where atc.is_deleted = 0
+        and scr.is_deleted = 0
+        and scr.case_id = atc.id
+        and atc.is_available = 1
+        and scr.execute_strategy_id = #{value}
     </select>
 
     <update id="delete">

@@ -3,13 +3,11 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.ApiLogMapper;
 import cn.veasion.auto.mapper.ApiTestCaseMapper;
-import cn.veasion.auto.mapper.ProjectMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiLogVO;
 import cn.veasion.auto.model.ApiRankingVO;
 import cn.veasion.auto.model.ApiTestCasePO;
-import cn.veasion.auto.model.ProjectPO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.http.client.utils.DateUtils;
@@ -40,8 +38,6 @@ public class ApiLogServiceImpl implements ApiLogService {
 
     @Resource
     private ApiLogMapper apiLogMapper;
-    @Resource
-    private ProjectMapper projectMapper;
     @Resource
     private ApiTestCaseMapper apiTestCaseMapper;
     @Resource
@@ -161,16 +157,6 @@ public class ApiLogServiceImpl implements ApiLogService {
         List<ApiRankingVO> list = apiLogMapper.listRanking(apiLog);
         if (list == null || list.isEmpty()) {
             return list;
-        }
-        List<Integer> projectIds = list.stream().map(ApiRankingVO::getProjectId).filter(Objects::nonNull).collect(Collectors.toList());
-        if (projectIds.size() > 0) {
-            List<ProjectPO> poList = projectMapper.queryByIds(projectIds);
-            Map<Integer, ProjectPO> map = poList.stream().collect(Collectors.toMap(ProjectPO::getId, Function.identity(), (t1, t2) -> t1));
-            for (ApiRankingVO apiRankingVO : list) {
-                if (map.containsKey(apiRankingVO.getProjectId())) {
-                    apiRankingVO.setProjectName(map.get(apiRankingVO.getProjectId()).getName());
-                }
-            }
         }
         List<Integer> strategyIds = list.stream().map(ApiRankingVO::getExecuteStrategyId).filter(Objects::nonNull).collect(Collectors.toList());
         if (strategyIds.size() > 0) {

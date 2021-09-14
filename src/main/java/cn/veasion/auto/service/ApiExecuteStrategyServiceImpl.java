@@ -7,12 +7,14 @@ import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.StrategyCaseRelationPO;
 import cn.veasion.auto.utils.Constants;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Async;
@@ -47,28 +49,29 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
     }
 
     @Override
-    public List<ApiExecuteStrategyPO> list(ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        return apiExecuteStrategyMapper.queryList(apiExecuteStrategyPO);
+    public List<ApiExecuteStrategyVO> list(ApiExecuteStrategyVO apiExecuteStrategy) {
+        return apiExecuteStrategyMapper.queryList(apiExecuteStrategy);
     }
 
     @Override
-    public Page<ApiExecuteStrategyPO> listPage(ApiExecuteStrategyPO apiExecuteStrategyPO, int pageIndex, int pageSize) {
+    public Page<ApiExecuteStrategyVO> listPage(ApiExecuteStrategyVO apiExecuteStrategy, int pageIndex, int pageSize) {
         PageHelper.startPage(pageIndex, pageSize);
-        return (Page<ApiExecuteStrategyPO>) apiExecuteStrategyMapper.queryList(apiExecuteStrategyPO);
+        return (Page<ApiExecuteStrategyVO>) apiExecuteStrategyMapper.queryList(apiExecuteStrategy);
     }
 
     @Override
-    public void saveOrUpdate(ApiExecuteStrategyPO apiExecuteStrategyPO) {
-        if (apiExecuteStrategyPO.getId() == null) {
-            apiExecuteStrategyPO.init();
-            apiExecuteStrategyMapper.insert(apiExecuteStrategyPO);
+    public void saveOrUpdate(ApiExecuteStrategyVO apiExecuteStrategy) {
+        if (apiExecuteStrategy.getId() == null) {
+            apiExecuteStrategy.init();
+            apiExecuteStrategyMapper.insert(apiExecuteStrategy);
         } else {
-            apiExecuteStrategyPO.setUpdateTime(new Date());
-            apiExecuteStrategyMapper.update(apiExecuteStrategyPO);
-            apiExecuteStrategyPO = getById(apiExecuteStrategyPO.getId());
+            apiExecuteStrategy.setUpdateTime(new Date());
+            apiExecuteStrategyMapper.update(apiExecuteStrategy);
+            ApiExecuteStrategyPO strategyPO = getById(apiExecuteStrategy.getId());
+            BeanUtils.copyProperties(strategyPO, apiExecuteStrategy);
         }
-        if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(apiExecuteStrategyPO.getStrategy())) {
-            ApiExecuteStrategyPO.ThreadStrategy threadStrategy = apiExecuteStrategyPO.toThreadStrategy();
+        if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(apiExecuteStrategy.getStrategy())) {
+            ApiExecuteStrategyPO.ThreadStrategy threadStrategy = apiExecuteStrategy.toThreadStrategy();
             if (threadStrategy == null) {
                 throw new BusinessException("线程创建策略不能为空");
             }
@@ -83,13 +86,13 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
                 throw new BusinessException("压测次数填写错误");
             }
         }
-        String key = ScheduledConfig.key(ApiExecuteStrategyPO.class, apiExecuteStrategyPO.getId());
-        if (ApiExecuteStrategyPO.STRATEGY_JOB.equals(apiExecuteStrategyPO.getStrategy()) &&
-                StringUtils.hasText(apiExecuteStrategyPO.getJobCron()) &&
-                Constants.YES.equals(apiExecuteStrategyPO.getIsAvailable()) &&
-                Constants.NO.equals(apiExecuteStrategyPO.getIsDeleted())) {
-            final ApiExecuteStrategyPO strategyPO = apiExecuteStrategyPO;
-            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO), apiExecuteStrategyPO.getJobCron());
+        String key = ScheduledConfig.key(ApiExecuteStrategyPO.class, apiExecuteStrategy.getId());
+        if (ApiExecuteStrategyPO.STRATEGY_JOB.equals(apiExecuteStrategy.getStrategy()) &&
+                StringUtils.hasText(apiExecuteStrategy.getJobCron()) &&
+                Constants.YES.equals(apiExecuteStrategy.getIsAvailable()) &&
+                Constants.NO.equals(apiExecuteStrategy.getIsDeleted())) {
+            final ApiExecuteStrategyPO strategyPO = apiExecuteStrategy;
+            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO), apiExecuteStrategy.getJobCron());
         } else {
             ScheduledConfig.removeCronTask(key);
         }
@@ -129,36 +132,36 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
     }
 
     @Override
-    public List<ApiExecuteStrategyPO> queryCronExecutableStrategy(Integer projectId) {
+    public List<ApiExecuteStrategyVO> queryCronExecutableStrategy(Integer projectId) {
         return apiExecuteStrategyMapper.queryCronExecutableStrategy(projectId);
     }
 
     @Override
     public void triggerCronUpdate(Integer projectId, boolean isAdd) {
-        List<ApiExecuteStrategyPO> list;
+        List<ApiExecuteStrategyVO> list;
         if (isAdd) {
             // 新增: 查询可用
             list = queryCronExecutableStrategy(projectId);
         } else {
             // 移除: 查询所有
-            ApiExecuteStrategyPO strategyPO = new ApiExecuteStrategyPO();
-            strategyPO.setProjectId(projectId);
-            strategyPO.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
-            list = list(strategyPO);
+            ApiExecuteStrategyVO strategyVO = new ApiExecuteStrategyVO();
+            strategyVO.setProjectId(projectId);
+            strategyVO.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
+            list = list(strategyVO);
         }
-        for (ApiExecuteStrategyPO strategyPO : list) {
+        for (ApiExecuteStrategyVO strategy : list) {
             try {
-                String key = ScheduledConfig.key(strategyPO.getClass(), strategyPO.getId());
+                String key = ScheduledConfig.key(strategy.getClass(), strategy.getId());
                 if (isAdd) {
                     ScheduledConfig.addCronTask(
                             key,
-                            () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO),
-                            strategyPO.getJobCron());
+                            () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategy),
+                            strategy.getJobCron());
                 } else {
                     ScheduledConfig.removeCronTask(key);
                 }
             } catch (Exception e) {
-                log.error("触发更新策略任务失败, id = {}, jobCron = {}", strategyPO.getId(), strategyPO.getJobCron(), e);
+                log.error("触发更新策略任务失败, id = {}, jobCron = {}", strategy.getId(), strategy.getJobCron(), e);
             }
         }
     }
