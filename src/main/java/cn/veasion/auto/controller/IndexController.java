@@ -1,8 +1,8 @@
 package cn.veasion.auto.controller;
 
 import cn.veasion.auto.model.ApiLogPO;
+import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiLogVO;
-import cn.veasion.auto.model.ApiRankingVO;
 import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiLogService;
 import cn.veasion.auto.utils.CpuMemoryUtils;
@@ -32,7 +32,7 @@ public class IndexController {
     private ApiLogService apiLogService;
 
     @RequestMapping("/listRanking")
-    public R<List<ApiRankingVO>> listRanking(ApiLogVO apiLog) {
+    public R<List<ApiLogVO>> listRanking(ApiLogQueryVO apiLog) {
         return R.ok(apiLogService.listRanking(apiLog));
     }
 
@@ -50,7 +50,7 @@ public class IndexController {
     public R<Map<String, Object>> chartInfo() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, -7);
-        ApiLogVO apiLog = new ApiLogVO();
+        ApiLogQueryVO apiLog = new ApiLogQueryVO();
         apiLog.setStartCreateDate(DateUtils.formatDate(calendar.getTime(), "yyyy-MM-dd 00:00:00"));
         apiLog.setEndCreateTime(DateUtils.formatDate(new Date(), "yyyy-MM-dd 59:59:59"));
         List<Map<String, Object>> mapList = apiLogService.groupDayStatusCount(apiLog);

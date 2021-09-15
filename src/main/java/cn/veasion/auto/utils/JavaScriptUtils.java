@@ -9,6 +9,8 @@ import jdk.nashorn.internal.runtime.ScriptFunction;
 import jdk.nashorn.internal.runtime.ScriptObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,6 +176,57 @@ public class JavaScriptUtils {
         StringBuilder sb = new StringBuilder();
         appendObject(sb, obj);
         return sb.toString();
+    }
+
+    public static String generatorRootFunctionCode(Class<?> bindingClass, String bindingKey, String[] skipMethods, Class<?>... skipMethodClasses) {
+        Method[] methods = bindingClass.getMethods();
+        StringBuilder jsCode = new StringBuilder();
+        todo:
+        for (Method method : methods) {
+            if (skipMethods != null) {
+                for (String skipMethod : skipMethods) {
+                    if (method.getName().equals(skipMethod)) {
+                        continue todo;
+                    }
+                }
+            }
+            int modifiers = method.getModifiers();
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass.equals(Object.class)) {
+                continue;
+            }
+            if (skipMethodClasses != null && skipMethodClasses.length > 0) {
+                for (Class<?> skipMethodClass : skipMethodClasses) {
+                    if (declaringClass.equals(skipMethodClass)) {
+                        continue todo;
+                    }
+                }
+            }
+            if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+                jsMethod(jsCode, method, bindingKey);
+                jsCode.append("\n");
+            }
+        }
+        return jsCode.toString();
+    }
+
+    private static void jsMethod(StringBuilder jsCode, Method method, String binding) {
+        String name = method.getName();
+        int paramCount = method.getParameterCount();
+        jsCode.append("function ").append(name).append("(");
+        appendParams(jsCode, paramCount);
+        jsCode.append("){ return ").append(binding).append(".").append(name).append("(");
+        appendParams(jsCode, paramCount);
+        jsCode.append(");}");
+    }
+
+    private static void appendParams(StringBuilder jsCode, int paramCount) {
+        for (int i = 0; i < paramCount; i++) {
+            jsCode.append("v").append(i + 1).append(",");
+        }
+        if (paramCount > 0) {
+            jsCode.setLength(jsCode.length() - 1);
+        }
     }
 
 }

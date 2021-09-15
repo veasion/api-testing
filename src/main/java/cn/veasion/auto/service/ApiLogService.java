@@ -1,8 +1,8 @@
 package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiLogPO;
+import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiLogVO;
-import cn.veasion.auto.model.ApiRankingVO;
 import com.github.pagehelper.Page;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public interface ApiLogService {
 
-    Page<ApiLogPO> listPage(ApiLogVO apiLog, int pageIndex, int pageSize);
+    Page<ApiLogVO> listPage(ApiLogQueryVO apiLog, int pageIndex, int pageSize);
 
     int addWithNewTx(ApiLogPO apiLogPO);
 
@@ -36,17 +36,17 @@ public interface ApiLogService {
     /**
      * 统计各状态数量
      */
-    Map<Integer, Integer> countStatus(ApiLogVO apiLog);
+    Map<Integer, Integer> countStatus(ApiLogQueryVO apiLog);
 
     /**
      * 按天统计各状态数量
      */
-    List<Map<String, Object>> groupDayStatusCount(ApiLogVO apiLog);
+    List<Map<String, Object>> groupDayStatusCount(ApiLogQueryVO apiLog);
 
     /**
      * 接口耗时排行榜
      */
-    List<ApiRankingVO> listRanking(ApiLogVO apiLog);
+    List<ApiLogVO> listRanking(ApiLogQueryVO apiLog);
 
     /**
      * 压测结果分析

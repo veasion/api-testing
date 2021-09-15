@@ -2,6 +2,7 @@ package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiExecuteStrategyVO;
+import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import com.github.pagehelper.Page;
 
@@ -15,7 +16,9 @@ import java.util.List;
  */
 public interface ApiExecuteStrategyService {
 
-    ApiExecuteStrategyPO getById(int id);
+    ApiExecuteStrategyPO getById(Integer id);
+
+    ApiExecuteStrategyVO queryStrategyById(Integer id);
 
     List<ApiExecuteStrategyVO> list(ApiExecuteStrategyVO apiExecuteStrategy);
 
@@ -35,6 +38,6 @@ public interface ApiExecuteStrategyService {
 
     void triggerCronUpdate(Integer projectId, boolean isAdd);
 
-    void runStrategy(ApiExecuteStrategyPO strategy);
+    void runStrategy(ApiExecuteStrategyVO strategy);
 
 }

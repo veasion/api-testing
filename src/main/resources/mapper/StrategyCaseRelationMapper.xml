@@ -30,6 +30,14 @@
         </foreach>
     </insert>
 
+    <insert id="addAll">
+        insert into strategy_case_relation (execute_strategy_id, case_id, is_deleted, create_time, update_time)
+        values
+        <foreach collection="caseIds" item="item" separator=",">
+            (#{executeStrategyId}, #{item}, 0, NOW(), NOW())
+        </foreach>
+    </insert>
+
     <update id="update">
         update strategy_case_relation
         <set>
@@ -90,5 +98,9 @@
             </foreach>
         </if>
     </update>
+
+    <select id="queryCaseIds" resultType="java.lang.Integer">
+        select case_id from strategy_case_relation where is_deleted = 0 and execute_strategy_id = #{executeStrategyId}
+    </select>
 
 </mapper>

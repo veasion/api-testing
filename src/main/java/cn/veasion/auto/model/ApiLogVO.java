@@ -2,34 +2,21 @@ package cn.veasion.auto.model;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * ApiLogVO
  *
  * @author luozhuowei
- * @date 2021/9/11
+ * @date 2021/9/12
  */
 @Data
-public class ApiLogVO {
+public class ApiLogVO extends ApiLogPO {
 
-    private String id;
-    private String refId;
-    private Integer projectId;
-    private Integer executeStrategyId;
-    private Integer testCaseId;
-    private Integer apiRequestId;
-    private Integer isAvailable;
+    private String apiName;
+    private String apiDesc;
+    private String method;
 
-    private String startCreateDate;
-    private String endCreateTime;
-    private Integer startTime;
-    private Integer endTime;
-    private Integer startExecTime;
-    private Integer endExecTime;
-    private Integer status;
-    private List<Integer> statusList;
-    private String msg;
-    private String url;
+    private String projectName;
+    private String executeStrategyName;
+    private String testCaseName;
 
 }

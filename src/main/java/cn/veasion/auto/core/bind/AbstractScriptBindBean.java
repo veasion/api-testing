@@ -13,6 +13,11 @@ public abstract class AbstractScriptBindBean implements ScriptBindBean {
     protected ScriptContext scriptContext;
 
     @Override
+    public boolean root() {
+        return false;
+    }
+
+    @Override
     public String var() {
         return getClass().getSimpleName().replace(ScriptBindBean.class.getSimpleName(), "").toLowerCase();
     }

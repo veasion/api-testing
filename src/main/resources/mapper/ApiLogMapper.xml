@@ -112,10 +112,10 @@
         select * from api_log t where id = #{value}
     </select>
 
-    <select id="queryList" resultType="cn.veasion.auto.model.ApiLogPO">
-        select * from api_log t where is_deleted = 0
+    <select id="queryList" resultType="cn.veasion.auto.model.ApiLogVO">
+        select * from api_log t where t.is_deleted = 0
         <include refid="whereSQL" />
-        order by id desc
+        order by t.id desc
     </select>
 
     <select id="queryByStrategyId" resultType="cn.veasion.auto.model.ApiLogPO">
@@ -146,7 +146,7 @@
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
     </select>
 
-    <select id="listRanking" resultType="cn.veasion.auto.model.ApiRankingVO">
+    <select id="listRanking" resultType="cn.veasion.auto.model.ApiLogVO">
         select t.*, p.name as projectName, api.api_name, api.api_desc, api.method from api_log t
         inner join project p on t.project_id = p.id and p.is_deleted = 0
         left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
@@ -164,7 +164,7 @@
         <if test="id != null and id.trim() != ''">
             and t.id = #{id}
         </if>
-        <if test="refId != null">
+        <if test="refId != null and refId.trim() != ''">
             and t.ref_id = #{refId}
         </if>
         <if test="projectId != null">

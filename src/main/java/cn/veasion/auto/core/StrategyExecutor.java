@@ -3,6 +3,7 @@ package cn.veasion.auto.core;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ApiTestCaseVO;
@@ -42,7 +43,7 @@ public class StrategyExecutor {
     @Resource
     private StrategyCaseRelationMapper strategyCaseRelationMapper;
 
-    public void run(ApiExecuteStrategyPO strategy) {
+    public void run(ApiExecuteStrategyVO strategy) {
         Integer type = strategy.getType();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(type);
         if (script && !StringUtils.hasText(strategy.getScript())) {
@@ -53,6 +54,7 @@ public class StrategyExecutor {
 
         ApiLogPO refLog = scriptContext.buildApiLog(null, true);
         apiLogService.addWithNewTx(refLog);
+        strategy.setRefLogId(refLog.getId());
 
         ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         long timeMillis = System.currentTimeMillis();

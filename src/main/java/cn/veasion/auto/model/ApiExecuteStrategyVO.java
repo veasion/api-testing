@@ -16,4 +16,6 @@ public class ApiExecuteStrategyVO extends ApiExecuteStrategyPO {
     private String projectName;
     private List<Integer> caseIds;
 
+    private String refLogId;
+
 }

@@ -1,14 +1,17 @@
 package cn.veasion.auto.core.bind;
 
-import cn.veasion.auto.exception.ScriptException;
 import cn.veasion.auto.utils.EvalAnalysisUtils;
 import cn.veasion.auto.utils.JavaScriptUtils;
+import com.alibaba.fastjson.JSON;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.objects.NativeDate;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -21,6 +24,18 @@ import java.util.Random;
 public class CommonScriptBindBean extends AbstractScriptBindBean {
 
     private static final Random RAND = new Random(System.currentTimeMillis());
+
+    public Object jsonValue(String jsonPath, Object jsonObject) {
+        Object object;
+        if (jsonObject instanceof String) {
+            object = JSON.parse((String) jsonObject);
+        } else {
+            object = JavaScriptUtils.toJavaObject(jsonObject);
+        }
+        return EvalAnalysisUtils.parse(jsonPath, new HashMap<String, Object>() {{
+            put("$", object);
+        }});
+    }
 
     public Object eval(String str, Object obj) {
         return EvalAnalysisUtils.eval(str, JavaScriptUtils.toJavaObject(obj));
@@ -59,11 +74,8 @@ public class CommonScriptBindBean extends AbstractScriptBindBean {
         }
     }
 
-    public void assertResult(boolean flag, Object message) {
-        String msg = String.valueOf(message);
-        if (!flag) {
-            throw new ScriptException(msg);
-        }
+    public String md5(String str) {
+        return DigestUtils.md5Hex(str.getBytes(Charset.forName("UTF-8")));
     }
 
     public String formatDate(Object date, String pattern) {

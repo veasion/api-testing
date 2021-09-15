@@ -56,4 +56,6 @@ public interface ApiRequestMapper {
      */
     List<ApiRequestVO> queryList(ApiRequestVO apiRequestVO);
 
+    List<ApiRequestPO> queryByIds(List<Integer> ids);
+
 }

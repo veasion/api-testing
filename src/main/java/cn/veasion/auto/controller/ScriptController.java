@@ -2,6 +2,7 @@ package cn.veasion.auto.controller;
 
 import cn.veasion.auto.core.ScriptContext;
 import cn.veasion.auto.core.ScriptExecutor;
+import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
@@ -68,7 +69,14 @@ public class ScriptController extends BaseController {
                 resultMap.put("beforeScript", e.getClass().getSimpleName() + ": " + e.getMessage());
             }
         }
-        Object result = scriptExecutor.executeScript(script, scriptContext, envMap);
+        Object result;
+        try {
+            result = scriptExecutor.executeScript(script, scriptContext, envMap);
+        } catch (Exception e) {
+            result = null;
+            scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
+            scriptContext.getRefLog().appendLog("执行失败 " + e.getClass().getSimpleName() + "：" + e.getMessage());
+        }
         if (afterScript && projectConfig != null && StringUtils.hasText(projectConfig.getAfterScript())) {
             try {
                 scriptExecutor.executeScript(projectConfig.getAfterScript(), scriptContext, envMap);

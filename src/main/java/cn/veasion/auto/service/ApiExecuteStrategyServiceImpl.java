@@ -24,7 +24,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * ApiExecuteStrategyServiceImpl
@@ -44,8 +46,22 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
     private StrategyCaseRelationMapper strategyCaseRelationMapper;
 
     @Override
-    public ApiExecuteStrategyPO getById(int id) {
+    public ApiExecuteStrategyPO getById(Integer id) {
         return apiExecuteStrategyMapper.queryById(id);
+    }
+
+    @Override
+    public ApiExecuteStrategyVO queryStrategyById(Integer id) {
+        ApiExecuteStrategyPO strategyPO = apiExecuteStrategyMapper.queryById(id);
+        if (strategyPO == null) {
+            return null;
+        }
+        ApiExecuteStrategyVO result = new ApiExecuteStrategyVO();
+        BeanUtils.copyProperties(strategyPO, result);
+        if (ApiExecuteStrategyPO.TYPE_CASES.equals(strategyPO.getType())) {
+            result.setCaseIds(strategyCaseRelationMapper.queryCaseIds(id));
+        }
+        return result;
     }
 
     @Override
@@ -67,8 +83,13 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
         } else {
             apiExecuteStrategy.setUpdateTime(new Date());
             apiExecuteStrategyMapper.update(apiExecuteStrategy);
+            List<Integer> caseIds = apiExecuteStrategy.getCaseIds();
             ApiExecuteStrategyPO strategyPO = getById(apiExecuteStrategy.getId());
             BeanUtils.copyProperties(strategyPO, apiExecuteStrategy);
+            apiExecuteStrategy.setCaseIds(caseIds);
+        }
+        if (apiExecuteStrategy.getCaseIds() != null) {
+            updateCaseIds(apiExecuteStrategy);
         }
         if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(apiExecuteStrategy.getStrategy())) {
             ApiExecuteStrategyPO.ThreadStrategy threadStrategy = apiExecuteStrategy.toThreadStrategy();
@@ -91,10 +112,29 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
                 StringUtils.hasText(apiExecuteStrategy.getJobCron()) &&
                 Constants.YES.equals(apiExecuteStrategy.getIsAvailable()) &&
                 Constants.NO.equals(apiExecuteStrategy.getIsDeleted())) {
-            final ApiExecuteStrategyPO strategyPO = apiExecuteStrategy;
-            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyPO), apiExecuteStrategy.getJobCron());
+            final ApiExecuteStrategyVO strategyVO = apiExecuteStrategy;
+            ScheduledConfig.resetCronTask(key, () -> SpringBeanUtils.getBean(getClass()).runStrategy(strategyVO), apiExecuteStrategy.getJobCron());
         } else {
             ScheduledConfig.removeCronTask(key);
+        }
+    }
+
+    private void updateCaseIds(ApiExecuteStrategyVO apiExecuteStrategy) {
+        Set<Integer> newCaseIds = new HashSet<>(apiExecuteStrategy.getCaseIds());
+        List<Integer> oldCaseIds = strategyCaseRelationMapper.queryCaseIds(apiExecuteStrategy.getId());
+        for (int i = oldCaseIds.size() - 1; i >= 0; i--) {
+            Integer oldCaseId = oldCaseIds.get(i);
+            if (newCaseIds.remove(oldCaseId)) {
+                oldCaseIds.remove(oldCaseId);
+            }
+        }
+        if (newCaseIds.size() > 0) {
+            // 新增
+            strategyCaseRelationMapper.addAll(apiExecuteStrategy.getId(), new ArrayList<>(newCaseIds));
+        }
+        if (oldCaseIds.size() > 0) {
+            // 删除
+            strategyCaseRelationMapper.delete(apiExecuteStrategy.getId(), new ArrayList<>(newCaseIds));
         }
     }
 
@@ -173,7 +213,7 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
 
     @Async
     @Override
-    public void runStrategy(ApiExecuteStrategyPO strategy) {
+    public void runStrategy(ApiExecuteStrategyVO strategy) {
         strategyExecutor.run(strategy);
     }
 

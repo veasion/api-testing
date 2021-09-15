@@ -10,6 +10,8 @@ import cn.veasion.auto.core.ScriptContext;
  */
 public interface ScriptBindBean {
 
+    boolean root();
+
     String var();
 
     void setScriptContext(ScriptContext scriptContext);

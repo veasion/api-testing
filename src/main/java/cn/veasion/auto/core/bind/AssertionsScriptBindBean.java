@@ -2,6 +2,8 @@ package cn.veasion.auto.core.bind;
 
 import cn.veasion.auto.exception.AssertException;
 import cn.veasion.auto.utils.JavaScriptUtils;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -15,6 +17,22 @@ import java.util.Objects;
 @Component
 public class AssertionsScriptBindBean extends AbstractScriptBindBean {
 
+    public void assertJsonPath(String jsonPath, Object object) {
+        assertJsonPath(jsonPath, object, "");
+    }
+
+    public void assertJsonPath(String jsonPath, Object object, String message) {
+        Object value = ((CommonScriptBindBean) scriptContext.getRoot().get("common")).jsonValue(jsonPath, object);
+        if (JavaScriptUtils.isNull(value) || "".equals(value)) {
+            try {
+                String str = JSON.toJSONString(JavaScriptUtils.toJavaObject(object));
+                throwException(message + " => JSON 期望 " + jsonPath + " 不为空，实际JSON数据：" + str);
+            } catch (JSONException e) {
+                throwException(message + " => JSON 期望 " + jsonPath + " 不为空，实际JSON格式错误：" + e.getMessage());
+            }
+        }
+    }
+
     public void assertTrue(boolean condition) {
         assertTrue(condition, "");
     }
@@ -22,6 +40,16 @@ public class AssertionsScriptBindBean extends AbstractScriptBindBean {
     public void assertTrue(boolean condition, String message) {
         if (!condition) {
             throwException(message + " => 期望为 true 结果是 false");
+        }
+    }
+
+    public void assertFalse(boolean condition) {
+        assertFalse(condition, "");
+    }
+
+    public void assertFalse(boolean condition, String message) {
+        if (condition) {
+            throwException(message + " => 期望为 false 结果是 true");
         }
     }
 
@@ -83,6 +111,11 @@ public class AssertionsScriptBindBean extends AbstractScriptBindBean {
 
     private void throwException(String message) {
         throw new AssertException(message);
+    }
+
+    @Override
+    public boolean root() {
+        return true;
     }
 
 }

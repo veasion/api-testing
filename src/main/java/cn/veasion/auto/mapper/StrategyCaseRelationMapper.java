@@ -27,6 +27,11 @@ public interface StrategyCaseRelationMapper {
     int insertAll(List<StrategyCaseRelationPO> list);
 
     /**
+     * 新增
+     */
+    int addAll(@Param("executeStrategyId") Integer executeStrategyId, @Param("caseIds") List<Integer> caseIds);
+
+    /**
      * 修改不为空字段
      */
     int update(StrategyCaseRelationPO obj);
@@ -54,6 +59,11 @@ public interface StrategyCaseRelationMapper {
     /**
      * 删除
      */
-    int delete(@Param("executeStrategyId") int executeStrategyId, @Param("caseIds") List<Integer> caseIds);
+    int delete(@Param("executeStrategyId") Integer executeStrategyId, @Param("caseIds") List<Integer> caseIds);
+
+    /**
+     * 查询所有caseIds
+     */
+    List<Integer> queryCaseIds(@Param("executeStrategyId") Integer executeStrategyId);
 
 }

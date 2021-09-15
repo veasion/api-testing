@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -34,6 +36,12 @@ public class BaseController {
 
     protected void notEmpty(String str, String message) {
         if (!StringUtils.hasText(str)) {
+            throw new BusinessException(message);
+        }
+    }
+
+    protected void notEmpty(Collection list, String message) {
+        if (list == null || list.isEmpty()) {
             throw new BusinessException(message);
         }
     }

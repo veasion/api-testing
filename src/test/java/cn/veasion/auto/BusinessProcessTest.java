@@ -3,7 +3,7 @@ package cn.veasion.auto;
 import cn.veasion.auto.core.StrategyExecutor;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiLogPO;
-import cn.veasion.auto.model.ApiLogVO;
+import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectConfigPO;
@@ -152,15 +152,15 @@ public class BusinessProcessTest extends BaseTest {
     @DisplayName("执行策略")
     public void strategyExecutor() throws InterruptedException {
         Integer apiExecuteStrategyId = context.getInteger("apiExecuteStrategyId");
-        strategyExecutor.run(apiExecuteStrategyService.getById(apiExecuteStrategyId));
+        strategyExecutor.run(apiExecuteStrategyService.queryStrategyById(apiExecuteStrategyId));
         Thread.sleep(1500);
-        Page<ApiLogPO> page = apiLogService.queryByStrategyId(apiExecuteStrategyId, null, 1, 1);
+        Page<? extends ApiLogPO> page = apiLogService.queryByStrategyId(apiExecuteStrategyId, null, 1, 1);
         System.out.println("策略执行日志：\n" + JSONObject.toJSONString(page, SerializerFeature.PrettyFormat));
         if (page.size() > 0) {
-            ApiLogVO apiLogVO = new ApiLogVO();
-            apiLogVO.setRefId(page.get(0).getId());
+            ApiLogQueryVO apiLog = new ApiLogQueryVO();
+            apiLog.setRefId(page.get(0).getId());
             System.out.println();
-            page = apiLogService.listPage(apiLogVO, 1, Constants.MAX_PAGE_SIZE);
+            page = apiLogService.listPage(apiLog, 1, Constants.MAX_PAGE_SIZE);
             System.out.println("详细执行日志：\n" + JSONObject.toJSONString(page, SerializerFeature.PrettyFormat));
         }
     }

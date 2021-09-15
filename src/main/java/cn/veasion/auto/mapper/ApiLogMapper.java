@@ -1,7 +1,7 @@
 package cn.veasion.auto.mapper;
 
+import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiLogVO;
-import cn.veasion.auto.model.ApiRankingVO;
 import org.apache.ibatis.annotations.Mapper;
 import cn.veasion.auto.model.ApiLogPO;
 import org.apache.ibatis.annotations.Param;
@@ -51,7 +51,7 @@ public interface ApiLogMapper {
     /**
      * 查询list
      */
-    List<ApiLogPO> queryList(ApiLogVO apiLog);
+    List<ApiLogVO> queryList(ApiLogQueryVO apiLog);
 
     /**
      * 根据策略ID查询单策略执行日志
@@ -61,17 +61,17 @@ public interface ApiLogMapper {
     /**
      * 统计各状态数量
      */
-    List<Map<String, Object>> countStatus(ApiLogVO apiLog);
+    List<Map<String, Object>> countStatus(ApiLogQueryVO apiLog);
 
     /**
      * 按天统计各状态数量
      */
-    List<Map<String, Object>> groupDayStatusCount(ApiLogVO apiLog);
+    List<Map<String, Object>> groupDayStatusCount(ApiLogQueryVO apiLog);
 
     /**
      * 接口耗时排行榜
      */
-    List<ApiRankingVO> listRanking(ApiLogVO apiLog);
+    List<ApiLogVO> listRanking(ApiLogQueryVO apiLog);
 
     /**
      * 汇总time

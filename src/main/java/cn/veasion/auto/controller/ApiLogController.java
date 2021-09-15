@@ -1,6 +1,7 @@
 package cn.veasion.auto.controller;
 
 import cn.veasion.auto.model.ApiLogPO;
+import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiLogVO;
 import cn.veasion.auto.model.Page;
 import cn.veasion.auto.model.R;
@@ -33,14 +34,14 @@ public class ApiLogController extends BaseController {
     private ApiLogService apiLogService;
 
     @GetMapping("/listPage")
-    public Page<ApiLogPO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
+    public Page<ApiLogVO> listPage(@RequestParam(required = false, defaultValue = "1") int pageNo,
                                    @RequestParam(required = false, defaultValue = "10") int pageSize,
-                                   ApiLogVO apiLog) {
+                                   ApiLogQueryVO apiLog) {
         return Page.ok(apiLogService.listPage(apiLog, pageNo, pageSize));
     }
 
     @GetMapping("/list")
-    public R<List<ApiLogPO>> list(ApiLogVO apiLog) {
+    public R<List<ApiLogVO>> list(ApiLogQueryVO apiLog) {
         return R.ok(apiLogService.listPage(apiLog, 1, Constants.MAX_CODE_SIZE));
     }
 
@@ -55,8 +56,8 @@ public class ApiLogController extends BaseController {
     }
 
     @GetMapping("/sumList")
-    public R<Object> sumList(ApiLogVO apiLog) {
-        List<ApiLogPO> list = apiLogService.listPage(apiLog, 1, Constants.MAX_CODE_SIZE);
+    public R<Object> sumList(ApiLogQueryVO apiLog) {
+        List<ApiLogVO> list = apiLogService.listPage(apiLog, 1, Constants.MAX_CODE_SIZE);
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("startTime", list.stream().map(ApiLogPO::getCreateTime).filter(Objects::nonNull).min(Date::compareTo).orElse(null));

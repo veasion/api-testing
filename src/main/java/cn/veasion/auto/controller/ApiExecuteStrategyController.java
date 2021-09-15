@@ -8,6 +8,7 @@ import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiExecuteStrategyService;
 import cn.veasion.auto.utils.Constants;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,6 +52,11 @@ public class ApiExecuteStrategyController extends BaseController {
         return R.ok(apiExecuteStrategyService.getById(id));
     }
 
+    @GetMapping("/queryStrategyById")
+    public R<ApiExecuteStrategyVO> queryStrategyById(@RequestParam("id") Integer id) {
+        return R.ok(apiExecuteStrategyService.queryStrategyById(id));
+    }
+
     @PostMapping("/add")
     public R<Object> add(@RequestBody ApiExecuteStrategyVO apiExecuteStrategy) {
         apiExecuteStrategy.setId(null);
@@ -57,6 +66,8 @@ public class ApiExecuteStrategyController extends BaseController {
         checkNotNull("参数不能为空", apiExecuteStrategy::getName, apiExecuteStrategy::getProjectId, apiExecuteStrategy::getType, apiExecuteStrategy::getStrategy);
         if (ApiExecuteStrategyPO.TYPE_SCRIPT.equals(apiExecuteStrategy.getType())) {
             notEmpty(apiExecuteStrategy.getScript(), "脚本不能为空");
+        } else if (ApiExecuteStrategyPO.TYPE_CASES.equals(apiExecuteStrategy.getType())) {
+            notEmpty(apiExecuteStrategy.getCaseIds(), "请选择case");
         }
         apiExecuteStrategy.setName(apiExecuteStrategy.getName().trim());
         apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategy);
@@ -66,6 +77,11 @@ public class ApiExecuteStrategyController extends BaseController {
     @PostMapping("/update")
     public R<Object> update(@RequestBody ApiExecuteStrategyVO apiExecuteStrategy) {
         notNull(apiExecuteStrategy.getId(), "id不能为空");
+        if (ApiExecuteStrategyPO.TYPE_SCRIPT.equals(apiExecuteStrategy.getType())) {
+            notEmpty(apiExecuteStrategy.getScript(), "脚本不能为空");
+        } else if (ApiExecuteStrategyPO.TYPE_CASES.equals(apiExecuteStrategy.getType())) {
+            notEmpty(apiExecuteStrategy.getCaseIds(), "请选择case");
+        }
         apiExecuteStrategyService.saveOrUpdate(apiExecuteStrategy);
         return R.ok();
     }
@@ -95,6 +111,31 @@ public class ApiExecuteStrategyController extends BaseController {
         Integer id = data.getInteger("id");
         List<Integer> caseIds = data.getJSONArray("caseIds").toJavaList(Integer.class);
         return R.ok(apiExecuteStrategyService.addCasesWithTx(id, caseIds));
+    }
+
+    @GetMapping("/runStrategy")
+    public R<String> runStrategy(Integer id) {
+        ApiExecuteStrategyVO strategyVO = apiExecuteStrategyService.queryStrategyById(id);
+        notNull(strategyVO, "策略不存在");
+        apiExecuteStrategyService.runStrategy(strategyVO);
+        return R.ok(strategyVO.getRefLogId());
+    }
+
+    @GetMapping("/nextTriggerTime")
+    public R<List<String>> nextTriggerTime(String cron) {
+        List<String> result = new ArrayList<>();
+        CronExpression cronExpression = CronExpression.parse(cron);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime lastTime = LocalDateTime.now();
+        for (int i = 0; i < 5; i++) {
+            lastTime = cronExpression.next(lastTime);
+            if (lastTime != null) {
+                result.add(dateTimeFormatter.format(lastTime));
+            } else {
+                break;
+            }
+        }
+        return R.ok(result);
     }
 
 }

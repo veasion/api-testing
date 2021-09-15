@@ -1,5 +1,6 @@
 package cn.veasion.auto.core;
 
+import cn.veasion.auto.core.bind.AbstractScriptBindBean;
 import cn.veasion.auto.core.bind.EnvScriptBindBean;
 import cn.veasion.auto.core.bind.ScriptBindBean;
 import cn.veasion.auto.exception.BusinessException;
@@ -9,6 +10,7 @@ import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.service.ProjectService;
+import cn.veasion.auto.utils.JavaScriptUtils;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -59,7 +61,7 @@ public class ScriptExecutor {
         return scriptContext;
     }
 
-    private ScriptEngine initScriptEngine(ScriptContext scriptContext) {
+    private ScriptEngine initScriptEngine(ScriptContext scriptContext) throws ScriptException {
         ScriptEngine scriptEngine = SCRIPT_ENGINE_FACTORY.getScriptEngine("--language=es6", "--no-java");
         scriptEngine.setContext(new SimpleScriptContext());
         Bindings bindings = scriptEngine.getBindings(ENGINE_BINDINGS_SCOPE);
@@ -69,13 +71,19 @@ public class ScriptExecutor {
             object.setScriptContext(scriptContext);
             bindings.put(var, object);
             scriptContext.getRoot().put(var, object);
+            if (bindBean.root()) {
+                scriptEngine.eval(JavaScriptUtils.generatorRootFunctionCode(
+                        object.getClass(), var,
+                        new String[]{"var", "root"},
+                        ScriptBindBean.class, AbstractScriptBindBean.class));
+            }
         }
         scriptContext.getEnv().reset();
         bindings.put("scriptContext", scriptContext);
         return scriptEngine;
     }
 
-    public ScriptEngine getScriptEngine(ScriptContext scriptContext) {
+    public ScriptEngine getScriptEngine(ScriptContext scriptContext) throws ScriptException {
         return initScriptEngine(scriptContext);
     }
 
