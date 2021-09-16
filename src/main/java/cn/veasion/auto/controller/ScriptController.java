@@ -2,6 +2,9 @@ package cn.veasion.auto.controller;
 
 import cn.veasion.auto.core.ScriptContext;
 import cn.veasion.auto.core.ScriptExecutor;
+import cn.veasion.auto.core.bind.AbstractScriptBindBean;
+import cn.veasion.auto.core.bind.ScriptBindBean;
+import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ProjectConfigPO;
@@ -11,6 +14,7 @@ import cn.veasion.auto.service.ApiRequestService;
 import cn.veasion.auto.service.ProjectService;
 import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.EvalAnalysisUtils;
+import cn.veasion.auto.utils.JavaScriptUtils;
 import cn.veasion.auto.utils.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -25,6 +29,8 @@ import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,9 +51,11 @@ public class ScriptController extends BaseController {
     private ProjectService projectService;
     @Resource
     private ApiRequestService apiRequestService;
+    @Resource
+    private Set<ScriptBindBean> scriptBindBeans;
 
     @PostMapping("/runScript")
-    public R<Object> runScript(@RequestBody JSONObject body) throws Exception {
+    public R<Object> runScript(@RequestBody JSONObject body) {
         notNull(body);
         String script = body.getString("script");
         Integer projectId = body.getInteger("projectId");
@@ -115,6 +123,55 @@ public class ScriptController extends BaseController {
         }
         sb.append(");");
         return R.ok(sb.toString());
+    }
+
+    @GetMapping("/apiNameTips")
+    public R<List<String>> apiNameTips(@RequestParam(required = false) Integer projectId) {
+        return R.ok(apiRequestService.queryAllApiName(projectId));
+    }
+
+    @GetMapping("/codeTips")
+    public R<Object> codeTips(@RequestParam(required = false) Integer projectId) {
+        Map<String, Object> varCodes = new HashMap<>();
+        Map<String, Object> root = new HashMap<>();
+        for (ScriptBindBean scriptBindBean : scriptBindBeans) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            varCodes.put(scriptBindBean.var(), map);
+            root.put(scriptBindBean.var(), map);
+            List<String> list = JavaScriptUtils.methodNames(scriptBindBean.getClass(), true, new String[]{"var", "root"},
+                    ScriptBindBean.class, AbstractScriptBindBean.class);
+            if (list.size() > 0) {
+                for (String method : list) {
+                    map.put(method, null);
+                    if (scriptBindBean.root()) {
+                        varCodes.put(method, null);
+                    }
+                }
+            }
+        }
+        Map<String, Object> scriptContext = new LinkedHashMap<>();
+        scriptContext.put("root", root);
+        scriptContext.put("projectId", null);
+        scriptContext.put("project", buildTips(ProjectPO.class));
+        scriptContext.put("refLog", buildTips(ApiLogPO.class));
+        scriptContext.put("strategy", buildTips(ApiExecuteStrategyPO.class));
+        scriptContext.put("apiLogList", null);
+        scriptContext.put("requestProcessor(request)", null);
+        scriptContext.put("responseProcessor(response, httpStatus, log)", null);
+        varCodes.put(ScriptExecutor.SCRIPT_CONTEXT_VAR, scriptContext);
+        Map<String, Object> result = new HashMap<>();
+        result.put("varCodes", varCodes);
+        result.put("globalMap", projectService.getGlobalMap(projectId));
+        return R.ok(result);
+    }
+
+    private Map<String, Object> buildTips(Class<?> clazz) {
+        Map<String, Object> map = new HashMap<>();
+        List<String> list = JavaScriptUtils.methodNames(clazz, true, new String[]{"isAvailable", "isDeleted"});
+        for (String method : list) {
+            map.put(method, null);
+        }
+        return map;
     }
 
     private void handleScriptParams(Integer projectId, StringBuilder sb, Set<String> keys) {

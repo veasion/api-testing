@@ -5,13 +5,18 @@ import cn.veasion.auto.mapper.ProjectMapper;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.utils.Constants;
+import cn.veasion.auto.utils.StringUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ProjectServiceImpl
@@ -19,6 +24,7 @@ import java.util.Date;
  * @author luozhuowei
  * @date 2021/9/10
  */
+@Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
@@ -82,4 +88,18 @@ public class ProjectServiceImpl implements ProjectService {
         apiExecuteStrategyService.triggerCronUpdate(id, false);
         return projectMapper.deleteById(id);
     }
+
+    @Override
+    public Map<String, Object> getGlobalMap(Integer projectId) {
+        String json = projectConfigMapper.queryGlobalVarJson(projectId);
+        if (StringUtils.hasText(json)) {
+            try {
+                return JSONObject.parseObject(json);
+            } catch (Exception e) {
+                log.error("解析全局json参数异常, projectId = {}", projectId, e);
+            }
+        }
+        return new HashMap<>();
+    }
+
 }

@@ -51,7 +51,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         }
     }
 
-    public Object request(ApiRequestPO requestPO, Map<String, Object> params) {
+    private Object request(ApiRequestPO requestPO, Map<String, Object> params) {
         String method = requestPO.getMethod();
         String url = eval(requestPO.getUrl(), params);
         String body = eval(requestPO.getBody(), params);

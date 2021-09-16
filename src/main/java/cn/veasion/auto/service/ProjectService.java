@@ -3,6 +3,8 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.model.ProjectPO;
 import com.github.pagehelper.Page;
 
+import java.util.Map;
+
 /**
  * ProjectService
  *
@@ -18,5 +20,7 @@ public interface ProjectService {
     void saveOrUpdate(ProjectPO projectPO);
 
     int delete(int id);
+
+    Map<String, Object> getGlobalMap(Integer projectId);
 
 }

@@ -56,6 +56,8 @@ public interface ApiRequestMapper {
      */
     List<ApiRequestVO> queryList(ApiRequestVO apiRequestVO);
 
+    List<String> queryAllApiName(@Param("projectId") Integer projectId);
+
     List<ApiRequestPO> queryByIds(List<Integer> ids);
 
 }

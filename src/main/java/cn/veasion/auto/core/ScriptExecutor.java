@@ -34,6 +34,7 @@ import java.util.Set;
 @Component
 public class ScriptExecutor {
 
+    public static final String SCRIPT_CONTEXT_VAR = "scriptContext";
     private static final NashornScriptEngineFactory SCRIPT_ENGINE_FACTORY;
     private static final int ENGINE_BINDINGS_SCOPE = SimpleScriptContext.ENGINE_SCOPE;
 
@@ -79,7 +80,7 @@ public class ScriptExecutor {
             }
         }
         scriptContext.getEnv().reset();
-        bindings.put("scriptContext", scriptContext);
+        bindings.put(SCRIPT_CONTEXT_VAR, scriptContext);
         return scriptEngine;
     }
 

@@ -4,6 +4,8 @@ import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiRequestVO;
 import com.github.pagehelper.Page;
 
+import java.util.List;
+
 /**
  * ApiRequestService
  *
@@ -21,5 +23,7 @@ public interface ApiRequestService {
     void saveOrUpdate(ApiRequestPO apiRequestPO);
 
     int delete(int id);
+
+    List<String> queryAllApiName(Integer projectId);
 
 }

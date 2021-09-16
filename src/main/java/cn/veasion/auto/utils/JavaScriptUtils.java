@@ -7,14 +7,17 @@ import jdk.nashorn.internal.objects.NativeArray;
 import jdk.nashorn.internal.runtime.Property;
 import jdk.nashorn.internal.runtime.ScriptFunction;
 import jdk.nashorn.internal.runtime.ScriptObject;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * JavaScriptUtils
@@ -24,6 +27,8 @@ import java.util.Map;
  */
 @SuppressWarnings({"unused", "restriction"})
 public class JavaScriptUtils {
+
+    private static LocalVariableTableParameterNameDiscoverer parameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     public static <T> List<T> toArray(ScriptObjectMirror o, Class<T> c) {
         if (o == null || o.isFunction()) {
@@ -179,8 +184,41 @@ public class JavaScriptUtils {
     }
 
     public static String generatorRootFunctionCode(Class<?> bindingClass, String bindingKey, String[] skipMethods, Class<?>... skipMethodClasses) {
-        Method[] methods = bindingClass.getMethods();
         StringBuilder jsCode = new StringBuilder();
+        methodReflect(method -> {
+            jsMethod(jsCode, method, bindingKey);
+            jsCode.append("\n");
+        }, bindingClass, skipMethods, skipMethodClasses);
+        return jsCode.toString();
+    }
+
+    public static List<String> methodNames(Class<?> bindingClass, boolean param, String[] skipMethods, Class<?>... skipMethodClasses) {
+        List<String> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        methodReflect(method -> {
+            sb.append(method.getName());
+            sb.append("(");
+            if (param) {
+                String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+                if (parameterNames != null && parameterNames.length > 0) {
+                    for (int i = 0; i < parameterNames.length; i++) {
+                        sb.append(parameterNames[i]);
+                        if (i < parameterNames.length - 1) {
+                            sb.append(", ");
+                        }
+                    }
+                }
+            }
+            sb.append(")");
+            list.add(sb.toString());
+            sb.setLength(0);
+        }, bindingClass, skipMethods, skipMethodClasses);
+        list.sort(Comparator.comparingInt(String::length));
+        return list;
+    }
+
+    private static void methodReflect(Consumer<Method> consumer, Class<?> bindingClass, String[] skipMethods, Class<?>... skipMethodClasses) {
+        Method[] methods = bindingClass.getMethods();
         todo:
         for (Method method : methods) {
             if (skipMethods != null) {
@@ -203,11 +241,9 @@ public class JavaScriptUtils {
                 }
             }
             if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
-                jsMethod(jsCode, method, bindingKey);
-                jsCode.append("\n");
+                consumer.accept(method);
             }
         }
-        return jsCode.toString();
     }
 
     private static void jsMethod(StringBuilder jsCode, Method method, String binding) {

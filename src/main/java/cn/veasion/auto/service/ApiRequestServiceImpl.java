@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * ApiRequestServiceImpl
@@ -71,5 +72,10 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     @Override
     public int delete(int id) {
         return apiRequestMapper.deleteById(id);
+    }
+
+    @Override
+    public List<String> queryAllApiName(Integer projectId) {
+        return apiRequestMapper.queryAllApiName(projectId);
     }
 }

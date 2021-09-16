@@ -54,4 +54,7 @@ public interface ProjectConfigMapper {
     @Select("select * from project_config where project_id = #{projectId} and is_deleted = 0")
     ProjectConfigPO queryByProjectId(@Param("projectId") Integer projectId);
 
+    @Select("select global_var_json from project_config where project_id = #{projectId} and is_deleted = 0")
+    String queryGlobalVarJson(@Param("projectId") Integer projectId);
+
 }
