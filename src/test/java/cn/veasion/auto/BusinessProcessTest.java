@@ -2,6 +2,7 @@ package cn.veasion.auto;
 
 import cn.veasion.auto.core.StrategyExecutor;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
+import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiRequestPO;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 /**
  * 整体业务测试
@@ -123,28 +125,21 @@ public class BusinessProcessTest extends BaseTest {
     public void addStrategy_2_1() throws Exception {
         Integer projectId = context.getInteger("projectId");
         Integer apiTestCaseId = context.getInteger("apiTestCaseId");
-        ApiExecuteStrategyPO strategyPO = new ApiExecuteStrategyPO();
-        strategyPO.setProjectId(projectId);
-        strategyPO.setName("策略_指定case_定时任务");
-        strategyPO.setDesc("定时执行");
-        strategyPO.setType(ApiExecuteStrategyPO.TYPE_CASES);
-        strategyPO.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
-        strategyPO.setIsAvailable(1);
-        strategyPO.setJobCron("0 */10 * * * ?");
+        ApiExecuteStrategyVO strategy = new ApiExecuteStrategyVO();
+        strategy.setProjectId(projectId);
+        strategy.setName("策略_指定case_定时任务");
+        strategy.setDesc("定时执行");
+        strategy.setType(ApiExecuteStrategyPO.TYPE_CASES);
+        strategy.setStrategy(ApiExecuteStrategyPO.STRATEGY_JOB);
+        strategy.setIsAvailable(1);
+        strategy.setJobCron("0 */10 * * * ?");
+        strategy.setCaseIds(Collections.singletonList(apiTestCaseId));
 
-        JSONObject data = postRequest("/api/apiExecuteStrategy/add", strategyPO);
+        JSONObject data = postRequest("/api/apiExecuteStrategy/add", strategy);
         System.out.println("新增策略: " + data);
         assertResponse(data);
         Integer apiExecuteStrategyId = data.getInteger(JSON_DATA_KEY);
         context.put("apiExecuteStrategyId", apiExecuteStrategyId);
-
-        JSONObject relation = new JSONObject();
-        relation.put("id", apiExecuteStrategyId);
-        relation.put("caseIds", new Integer[]{apiTestCaseId});
-
-        data = postRequest("/api/apiExecuteStrategy/addCasesWithTx", relation);
-        System.out.println("新增用例策略关联: " + data);
-        assertResponse(data);
     }
 
     @Test

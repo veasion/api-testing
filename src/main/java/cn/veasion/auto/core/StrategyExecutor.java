@@ -1,6 +1,7 @@
 package cn.veasion.auto.core;
 
 import cn.veasion.auto.exception.BusinessException;
+import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiExecuteStrategyVO;
@@ -40,6 +41,8 @@ public class StrategyExecutor {
     private ScriptExecutor scriptExecutor;
     @Resource
     private ApiTestCaseService apiTestCaseService;
+    @Resource
+    private ApiExecuteStrategyMapper apiExecuteStrategyMapper;
     @Resource
     private StrategyCaseRelationMapper strategyCaseRelationMapper;
 
@@ -88,13 +91,19 @@ public class StrategyExecutor {
             refLog.setExecTime((int) (System.currentTimeMillis() - timeMillis));
             List<ApiLogPO> batchLogs = scriptContext.getApiLogList();
             int totalTime = 0;
+            Integer strategyStatus = ApiExecuteStrategyPO.STATUS_FAIL;
             for (ApiLogPO log : batchLogs) {
                 if (log.getTime() != null) {
                     totalTime += log.getTime();
                 }
                 if (ApiLogPO.STATUS_FAIL.equals(log.getStatus())) {
                     refLog.setStatus(ApiLogPO.STATUS_FAIL);
+                } else if (ApiLogPO.STATUS_SUC.equals(log.getStatus())) {
+                    strategyStatus = ApiExecuteStrategyPO.STATUS_PART_SUC;
                 }
+            }
+            if (ApiLogPO.STATUS_SUC.equals(refLog.getStatus())) {
+                strategyStatus = ApiExecuteStrategyPO.STATUS_ALL_SUC;
             }
             refLog.setTime(totalTime);
             apiLogService.updateWithNewTx(refLog);
@@ -102,6 +111,8 @@ public class StrategyExecutor {
             apiLogService.addAllWithNewTx(batchLogs);
             batchLogs.clear();
             System.gc();
+            // 修改策略状态
+            apiExecuteStrategyMapper.updateStatus(strategy.getId(), strategyStatus);
         }
     }
 

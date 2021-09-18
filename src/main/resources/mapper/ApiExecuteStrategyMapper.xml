@@ -5,13 +5,13 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into api_execute_strategy
         (
-            project_id, `name`, `desc`, `type`, script,
+            project_id, `name`, `desc`, `type`, script, status,
             strategy, job_cron, thread_count, thread_strategy_json,
             is_available, is_deleted, create_username, create_time, update_time
         )
         values
         (
-            #{projectId}, #{name}, #{desc}, #{type}, #{script},
+            #{projectId}, #{name}, #{desc}, #{type}, #{script}, #{status},
             #{strategy}, #{jobCron}, #{threadCount}, #{threadStrategyJson},
             #{isAvailable}, #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
         )
@@ -20,14 +20,14 @@
     <insert id="insertAll">
         insert into api_execute_strategy
         (
-        project_id, `name`, `desc`, `type`, script,
+        project_id, `name`, `desc`, `type`, script, status,
         strategy, job_cron, thread_count, thread_strategy_json,
         is_available, is_deleted, create_username, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
             (
-            #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type}, #{obj.script},
+            #{obj.projectId}, #{obj.name}, #{obj.desc}, #{obj.type}, #{obj.script}, #{obj.status},
             #{obj.strategy}, #{obj.jobCron}, #{obj.threadCount}, #{obj.threadStrategyJson},
             #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
             )
@@ -103,6 +103,10 @@
         </set>
         where id = #{id}
     </update>
+
+    <update id="updateStatus">
+        update api_execute_strategy set status = #{status} where id = #{id}
+    </update>
     
     <update id="deleteById">
         update api_execute_strategy set is_deleted = 1 where id = #{value}
@@ -158,6 +162,9 @@
         </if>
         <if test="script != null and script.trim() != ''">
             and t.script like concat('%', #{script}, '%')
+        </if>
+        <if test="status != null">
+            and t.status = #{status}
         </if>
         <if test="isAvailable != null">
             and t.is_available = #{isAvailable}

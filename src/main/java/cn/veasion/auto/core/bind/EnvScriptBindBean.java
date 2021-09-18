@@ -2,11 +2,13 @@ package cn.veasion.auto.core.bind;
 
 import cn.veasion.auto.utils.EvalAnalysisUtils;
 import cn.veasion.auto.utils.JavaScriptUtils;
+import com.alibaba.fastjson.JSON;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -37,13 +39,24 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
     }
 
     public Object eval(String str, Map<String, Object> params) {
+        return eval(str, params, false);
+    }
+
+    public Object eval(String str, Map<String, Object> params, boolean toStr) {
         return EvalAnalysisUtils.eval(str, (Function<String, ?>) key -> {
             Object obj = null;
             if (params != null && params.containsKey(key)) {
-                obj = params.get(key);
+                obj = JavaScriptUtils.toJavaObject(params.get(key));
             }
             if (obj == null) {
                 obj = get(key);
+            }
+            if (toStr && obj != null) {
+                if (obj instanceof Map || obj instanceof List) {
+                    obj = JSON.toJSONString(obj);
+                } else {
+                    obj = obj.toString();
+                }
             }
             return obj == null ? "" : obj;
         });

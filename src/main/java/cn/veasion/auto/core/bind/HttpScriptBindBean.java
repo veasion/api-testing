@@ -151,7 +151,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
         if (!StringUtils.hasText(str)) {
             return str;
         }
-        Object val = scriptContext.getEnv().eval(str, params);
+        Object val = scriptContext.getEnv().eval(str, params, true);
         return val == null ? str : val.toString();
     }
 

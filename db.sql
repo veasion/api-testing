@@ -106,6 +106,7 @@ CREATE TABLE `api_execute_strategy` (
   `thread_count` int(11) DEFAULT NULL COMMENT '并发线程数',
   `thread_strategy_json` varchar(300) DEFAULT NULL COMMENT '线程创建策略（瞬时并发、并发间隔、执行次数、压测时间）',
   `script` text COMMENT 'js脚本',
+  `status` tinyint(4) DEFAULT NULL COMMENT '最后一次执行状态：1 部分成功 2 全部成功 3 失败',
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,

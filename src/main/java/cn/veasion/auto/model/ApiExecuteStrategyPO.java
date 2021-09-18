@@ -23,6 +23,10 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
     public static final Integer THREAD_STRATEGY_TIME = 1;
     public static final Integer THREAD_STRATEGY_LOOP = 2;
 
+    public static final Integer STATUS_PART_SUC = 1;
+    public static final Integer STATUS_ALL_SUC = 2;
+    public static final Integer STATUS_FAIL = 3;
+
     /**
      * 项目id
      */
@@ -59,6 +63,10 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
      * js脚本
      */
     private String script;
+    /**
+     * 最后一次执行状态：1 部分成功 2 全部成功 3 失败
+     */
+    private Integer status;
 
     public ThreadStrategy toThreadStrategy() {
         if (!StringUtils.hasText(threadStrategyJson)) {

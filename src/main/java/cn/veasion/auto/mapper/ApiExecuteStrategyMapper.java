@@ -37,6 +37,11 @@ public interface ApiExecuteStrategyMapper {
     int updateAll(ApiExecuteStrategyPO obj);
 
     /**
+     * 修改策略状态
+     */
+    int updateStatus(@Param("id") Integer id, @Param("status") Integer status);
+
+    /**
      * 删除
      */
     int deleteById(Integer id);
