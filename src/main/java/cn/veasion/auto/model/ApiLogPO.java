@@ -4,6 +4,8 @@ import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.StringUtils;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 日志
  *
@@ -11,11 +13,16 @@ import lombok.Data;
  * @date 2021-09-10
  */
 @Data
-public class ApiLogPO extends BasePO<String> {
+public class ApiLogPO {
 
     public static final Integer STATUS_RUNNING = 1;
     public static final Integer STATUS_SUC = 2;
     public static final Integer STATUS_FAIL = 3;
+
+    private String id;
+    private Integer isDeleted;
+    private Date createTime;
+    private Date updateTime;
 
     /**
      * 关联日志id
@@ -58,9 +65,16 @@ public class ApiLogPO extends BasePO<String> {
      */
     private Integer execTime;
 
-    @Override
     public void init() {
-        super.init();
+        if (isDeleted == null) {
+            isDeleted = Constants.NO;
+        }
+        if (createTime == null) {
+            createTime = new Date();
+        }
+        if (updateTime == null) {
+            updateTime = new Date();
+        }
         if (getId() == null) {
             setId(StringUtils.getUUID());
         }

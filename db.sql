@@ -14,6 +14,7 @@ CREATE TABLE `user` (
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_username` (`username`)
@@ -29,6 +30,7 @@ CREATE TABLE `project` (
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目';
@@ -47,6 +49,7 @@ CREATE TABLE `project_config` (
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_project_id` (`project_id`)
@@ -68,6 +71,7 @@ CREATE TABLE `api_request` (
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_project_id` (`project_id`),
@@ -88,6 +92,7 @@ CREATE TABLE `api_test_case` (
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_project_id` (`project_id`)
@@ -104,13 +109,14 @@ CREATE TABLE `api_execute_strategy` (
   `strategy` tinyint(4) DEFAULT NULL COMMENT '执行策略: 1 定时任务 2 压测',
   `job_cron` varchar(128) DEFAULT NULL COMMENT '任务执行CRON',
   `thread_count` int(11) DEFAULT NULL COMMENT '并发线程数',
-  `thread_strategy_json` varchar(300) DEFAULT NULL COMMENT '线程创建策略（瞬时并发、并发间隔、执行次数、压测时间）',
+  `thread_strategy_json` text COMMENT '线程创建策略（瞬时并发、并发间隔、执行次数、压测时间）',
   `script` text COMMENT 'js脚本',
   `status` tinyint(4) DEFAULT NULL COMMENT '最后一次执行状态：1 部分成功 2 全部成功 3 失败',
   `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_username` varchar(255) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_username` varchar(255) DEFAULT NULL,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_project_id` (`project_id`)
@@ -142,7 +148,6 @@ CREATE TABLE `api_log` (
   `status` tinyint(4) DEFAULT NULL COMMENT '运行状态: 1 执行中 2 执行成功 3 执行失败',
   `time` int(11) DEFAULT NULL COMMENT '请求接口耗时(ms)',
   `exec_time` int(11) DEFAULT NULL COMMENT '执行任务耗时(ms)',
-  `is_available` tinyint(4) DEFAULT NULL COMMENT '是否可用',
   `is_deleted` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

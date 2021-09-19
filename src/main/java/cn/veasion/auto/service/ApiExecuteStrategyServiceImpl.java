@@ -11,6 +11,7 @@ import cn.veasion.auto.model.ApiExecuteStrategyVO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.StrategyCaseRelationPO;
 import cn.veasion.auto.utils.Constants;
+import cn.veasion.auto.utils.UserUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,7 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
 
     @Override
     public void saveOrUpdate(ApiExecuteStrategyVO apiExecuteStrategy) {
+        apiExecuteStrategy.setUpdateUsername(UserUtils.getUsername());
         if (apiExecuteStrategy.getId() == null) {
             apiExecuteStrategy.init();
             apiExecuteStrategyMapper.insert(apiExecuteStrategy);

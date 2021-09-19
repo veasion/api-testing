@@ -5,6 +5,7 @@ import cn.veasion.auto.mapper.ApiRequestMapper;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiRequestVO;
 import cn.veasion.auto.utils.StringUtils;
+import cn.veasion.auto.utils.UserUtils;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -44,6 +45,7 @@ public class ApiRequestServiceImpl implements ApiRequestService {
 
     @Override
     public void saveOrUpdate(ApiRequestPO apiRequestPO) {
+        apiRequestPO.setUpdateUsername(UserUtils.getUsername());
         if (apiRequestPO.getProjectId() == null) {
             throw new BusinessException("projectId不能为空");
         }

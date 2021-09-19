@@ -6,14 +6,12 @@
         insert into api_log
         (
             id, ref_id, project_id, execute_strategy_id, test_case_id, api_request_id,
-            url, msg, status, `time`, exec_time, is_available,
-            is_deleted, create_time, update_time
+            url, msg, status, `time`, exec_time, is_deleted, create_time, update_time
         )
         values
         (
             #{id}, #{refId}, #{projectId}, #{executeStrategyId}, #{testCaseId}, #{apiRequestId},
-            #{url}, #{msg}, #{status}, #{time}, #{execTime}, #{isAvailable},
-            #{isDeleted}, #{createTime}, #{updateTime}
+            #{url}, #{msg}, #{status}, #{time}, #{execTime}, #{isDeleted}, #{createTime}, #{updateTime}
         )
     </insert>
 
@@ -21,15 +19,13 @@
         insert into api_log
         (
             id, ref_id, project_id, execute_strategy_id, test_case_id, api_request_id,
-            url, msg, status, `time`, exec_time, is_available,
-            is_deleted, create_time, update_time
+            url, msg, status, `time`, exec_time, is_deleted, create_time, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.id}, #{obj.refId}, #{obj.projectId}, #{obj.executeStrategyId}, #{obj.testCaseId}, #{obj.apiRequestId},
-            #{obj.url}, #{obj.msg}, #{obj.status}, #{obj.time}, #{obj.execTime}, #{obj.isAvailable},
-            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.url}, #{obj.msg}, #{obj.status}, #{obj.time}, #{obj.execTime}, #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -67,9 +63,6 @@
             <if test="execTime != null">
                 exec_time = #{execTime},
             </if>
-            <if test="isAvailable != null">
-                is_available = #{isAvailable},
-            </if>
             <if test="isDeleted != null">
                 is_deleted = #{isDeleted},
             </if>
@@ -96,7 +89,6 @@
             status = #{status},
             `time` = #{time},
             exec_time = #{execTime},
-            is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_time = #{createTime},
             update_time = #{updateTime},
@@ -151,7 +143,7 @@
         from api_log t
         inner join project p on t.project_id = p.id and p.is_deleted = 0
         inner join api_execute_strategy s on t.execute_strategy_id = s.id and s.strategy = 1 and s.is_deleted = 0
-        left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
+        left join api_request api on api.id = t.api_request_id and api.is_deleted = 0
         where t.is_deleted = 0 and t.ref_id &lt;&gt; '0' and t.time > 0
         <include refid="whereSQL" />
         group by t.execute_strategy_id, t.url
@@ -205,9 +197,6 @@
         </if>
         <if test="endExecTime != null">
             and t.exec_time &lt;= #{endExecTime}
-        </if>
-        <if test="isAvailable != null">
-            and t.is_available = #{isAvailable}
         </if>
         <if test="startCreateDate != null">
             and t.create_time >= #{startCreateDate}

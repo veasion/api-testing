@@ -3,6 +3,7 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.UserMapper;
 import cn.veasion.auto.model.UserPO;
+import cn.veasion.auto.utils.UserUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveOrUpdate(UserPO userPO) {
+        userPO.setUpdateUsername(UserUtils.getUsername());
         if (userPO.getUsername() != null) {
             UserPO u = userMapper.queryByUsername(userPO.getUsername(), userPO.getId());
             if (u != null) {

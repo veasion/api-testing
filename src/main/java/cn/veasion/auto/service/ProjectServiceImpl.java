@@ -6,6 +6,7 @@ import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.StringUtils;
+import cn.veasion.auto.utils.UserUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -53,6 +54,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void saveOrUpdate(ProjectPO projectPO) {
+        projectPO.setUpdateUsername(UserUtils.getUsername());
         if (projectPO.getId() == null) {
             projectPO.init();
             projectMapper.insert(projectPO);
@@ -69,6 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         if (projectConfig != null) {
             projectConfig.setProjectId(projectPO.getId());
+            projectConfig.setUpdateUsername(UserUtils.getUsername());
             if (projectConfig.getId() == null) {
                 projectConfig.init();
                 projectConfigMapper.insert(projectConfig);

@@ -72,7 +72,7 @@ public class ScriptServiceImpl implements ScriptService {
         }
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         Map<String, Object> resultMap = new HashMap<>();
-        ScriptContext scriptContext = scriptExecutor.createScriptContext(projectId);
+        ScriptContext scriptContext = scriptExecutor.createScriptContext(projectPO);
         scriptContext.buildApiLog(null, true);
         if (beforeScript && projectConfig != null && StringUtils.hasText(projectConfig.getBeforeScript())) {
             try {
@@ -137,7 +137,7 @@ public class ScriptServiceImpl implements ScriptService {
             Map<String, Object> map = new LinkedHashMap<>();
             varCodes.put(scriptBindBean.var(), map);
             root.put(scriptBindBean.var(), map);
-            List<String> list = JavaScriptUtils.methodNames(scriptBindBean.getClass(), true, new String[]{"var", "root"},
+            List<String> list = JavaScriptUtils.methodNames(scriptBindBean.getClass(), true, new String[]{"var", "root", "reset"},
                     ScriptBindBean.class, AbstractScriptBindBean.class);
             if (list.size() > 0) {
                 for (String method : list) {
@@ -169,7 +169,7 @@ public class ScriptServiceImpl implements ScriptService {
         }
         Map<String, Object> resultMap = new HashMap<>();
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
-        ScriptContext scriptContext = scriptExecutor.createScriptContext(projectId);
+        ScriptContext scriptContext = scriptExecutor.createScriptContext(projectPO);
         if (projectConfig != null && StringUtils.hasText(projectConfig.getBeforeScript())) {
             try {
                 scriptExecutor.executeScript(projectConfig.getBeforeScript(), scriptContext);

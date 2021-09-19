@@ -7,13 +7,13 @@
         (
             project_id, case_name, case_desc, module, 
             author, script, is_available, is_deleted, 
-            create_time, update_time, create_username
+            create_time, update_time, update_username, create_username
         )
         values
         (
             #{projectId}, #{caseName}, #{caseDesc}, #{module}, 
             #{author}, #{script}, #{isAvailable}, #{isDeleted}, 
-            #{createTime}, #{updateTime}, #{createUsername}
+            #{createTime}, #{updateTime}, #{updateUsername}, #{createUsername}
         )
     </insert>
 
@@ -22,14 +22,14 @@
         (
             project_id, case_name, case_desc, module, 
             author, script, is_available, is_deleted, 
-            create_time, update_time, create_username
+            create_time, update_time, update_username, create_username
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.projectId}, #{obj.caseName}, #{obj.caseDesc}, #{obj.module}, 
             #{obj.author}, #{obj.script}, #{obj.isAvailable}, #{obj.isDeleted}, 
-            #{obj.createTime}, #{obj.updateTime}, #{obj.createUsername}
+            #{obj.createTime}, #{obj.updateTime}, #{obj.updateUsername}, #{obj.createUsername}
         )
         </foreach>
     </insert>
@@ -47,7 +47,7 @@
                 case_desc = #{caseDesc},
             </if>
             <if test="module != null">
-                module = #{module},
+                `module` = #{module},
             </if>
             <if test="author != null">
                 author = #{author},
@@ -67,8 +67,11 @@
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
+            <if test="updateUsername != null">
+                update_username = #{updateUsername},
+            </if>
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                update_time = #{updateTime}
             </if>
         </set>
         where id = #{id}
@@ -80,14 +83,15 @@
             project_id = #{projectId},
             case_name = #{caseName},
             case_desc = #{caseDesc},
-            module = #{module},
+            `module` = #{module},
             author = #{author},
             script = #{script},
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_username = #{createUsername},
             create_time = #{createTime},
-            update_time = #{updateTime},
+            update_username = #{updateUsername},
+            update_time = #{updateTime}
         </set>
         where id = #{id}
     </update>

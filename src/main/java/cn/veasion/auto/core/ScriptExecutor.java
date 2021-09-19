@@ -3,13 +3,11 @@ package cn.veasion.auto.core;
 import cn.veasion.auto.core.bind.AbstractScriptBindBean;
 import cn.veasion.auto.core.bind.EnvScriptBindBean;
 import cn.veasion.auto.core.bind.ScriptBindBean;
-import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.model.ApiExecuteStrategyPO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectConfigPO;
 import cn.veasion.auto.model.ProjectPO;
-import cn.veasion.auto.service.ProjectService;
 import cn.veasion.auto.utils.JavaScriptUtils;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -43,22 +41,16 @@ public class ScriptExecutor {
     }
 
     @Resource
-    private ProjectService projectService;
-    @Resource
     private Set<ScriptBindBean> scriptBindBeans;
 
-    public ScriptContext createScriptContext(Integer projectId) {
-        ProjectPO projectPO = projectService.getById(projectId);
-        if (projectPO == null) {
-            throw new BusinessException("项目不存在: " + projectId);
-        }
+    public ScriptContext createScriptContext(ProjectPO projectPO) {
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         if (projectConfig != null && StringUtils.hasText(projectConfig.getGlobalVarJson())) {
-            EnvScriptBindBean.setGlobalMap(projectId, projectConfig.toGlobalVarJson());
+            EnvScriptBindBean.setGlobalMap(projectPO.getId(), projectConfig.toGlobalVarJson());
         }
         ScriptContext scriptContext = new ScriptContext();
-        scriptContext.setProjectId(projectId);
         scriptContext.setProject(projectPO);
+        scriptContext.setNeedResetEnv(true);
         return scriptContext;
     }
 
@@ -79,7 +71,9 @@ public class ScriptExecutor {
                         ScriptBindBean.class, AbstractScriptBindBean.class));
             }
         }
-        scriptContext.getEnv().reset();
+        if (scriptContext.isNeedResetEnv()) {
+            scriptContext.getEnv().reset();
+        }
         bindings.put(SCRIPT_CONTEXT_VAR, scriptContext);
         return scriptEngine;
     }
@@ -114,16 +108,16 @@ public class ScriptExecutor {
             scriptContext.getThreadLocalCase().set(null);
             ScriptEngine scriptEngine = getScriptEngine(scriptContext);
             if (params != null && params.size() > 0) {
-                for (Map.Entry<String, Object> entry : params.entrySet()) {
-                    scriptContext.getEnv().put(entry.getKey(), entry.getValue());
-                }
+                scriptContext.getEnv().putAll(params);
             }
             return scriptEngine.eval(script);
         } catch (Exception e) {
             log.error("执行脚本失败，script: {}", script, e);
             throw e;
         } finally {
-            scriptContext.getEnv().reset();
+            if (scriptContext.isNeedResetEnv()) {
+                scriptContext.getEnv().reset();
+            }
         }
     }
 
@@ -138,7 +132,9 @@ public class ScriptExecutor {
             log.error("执行脚本失败，策略: {}", strategyPO.getName(), e);
             throw e;
         } finally {
-            scriptContext.getEnv().reset();
+            if (scriptContext.isNeedResetEnv()) {
+                scriptContext.getEnv().reset();
+            }
         }
     }
 
@@ -153,7 +149,9 @@ public class ScriptExecutor {
             log.error("执行脚本失败，用例: {}", testCasePO.getCaseName(), e);
             throw e;
         } finally {
-            scriptContext.getEnv().reset();
+            if (scriptContext.isNeedResetEnv()) {
+                scriptContext.getEnv().reset();
+            }
             scriptContext.getThreadLocalCase().remove();
         }
     }
@@ -170,7 +168,9 @@ public class ScriptExecutor {
             log.error("执行脚本失败，apiName: {}", apiName, e);
             throw e;
         } finally {
-            scriptContext.getEnv().reset();
+            if (scriptContext.isNeedResetEnv()) {
+                scriptContext.getEnv().reset();
+            }
             scriptContext.getThreadLocalCase().remove();
         }
     }

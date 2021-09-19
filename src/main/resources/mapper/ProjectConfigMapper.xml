@@ -6,12 +6,12 @@
         insert into project_config
         (
             project_id, open_req_log, global_var_json, exception_script, before_script,
-            after_script, is_available, is_deleted, create_username, create_time, update_time
+            after_script, is_available, is_deleted, create_username, create_time, update_username, update_time
         )
         values
         (
             #{projectId}, #{openReqLog}, #{globalVarJson}, #{exceptionScript}, #{beforeScript},
-            #{afterScript}, #{isAvailable}, #{isDeleted}, #{createUsername}, #{createTime}, #{updateTime}
+            #{afterScript}, #{isAvailable}, #{isDeleted}, #{createUsername}, #{createTime}, #{updateUsername}, #{updateTime}
         )
     </insert>
 
@@ -19,13 +19,13 @@
         insert into project_config
         (
             project_id, open_req_log, global_var_json, exception_script, before_script,
-            after_script, is_available, is_deleted, create_username, create_time, update_time
+            after_script, is_available, is_deleted, create_username, create_time, update_username, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.projectId}, #{obj.openReqLog}, #{obj.globalVarJson}, #{obj.exceptionScript}, #{obj.beforeScript},
-            #{obj.afterScript}, #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.afterScript}, #{obj.isAvailable}, #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateUsername}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -63,8 +63,11 @@
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
+            <if test="updateUsername != null">
+                update_username = #{updateUsername},
+            </if>
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                update_time = #{updateTime}
             </if>
         </set>
         where id = #{id}
@@ -83,7 +86,8 @@
             is_deleted = #{isDeleted},
             create_username = #{createUsername},
             create_time = #{createTime},
-            update_time = #{updateTime},
+            update_username = #{updateUsername},
+            update_time = #{updateTime}
         </set>
         where id = #{id}
     </update>

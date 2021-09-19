@@ -23,6 +23,7 @@ public class BasePO<T extends Serializable> implements Serializable {
     private Integer isDeleted;
     private String createUsername;
     private Date createTime;
+    private String updateUsername;
     private Date updateTime;
 
     public void init() {
@@ -40,6 +41,9 @@ public class BasePO<T extends Serializable> implements Serializable {
         }
         if (updateTime == null) {
             updateTime = new Date();
+        }
+        if (updateUsername == null) {
+            updateUsername = UserUtils.getUsername();
         }
     }
 }

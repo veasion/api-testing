@@ -6,12 +6,12 @@
         insert into user
         (
             username, password, role, is_available, 
-            is_deleted, create_time, update_time
+            is_deleted, create_time, update_username, update_time
         )
         values
         (
             #{username}, #{password}, #{role}, #{isAvailable}, 
-            #{isDeleted}, #{createTime}, #{updateTime}
+            #{isDeleted}, #{createTime}, #{updateUsername}, #{updateTime}
         )
     </insert>
 
@@ -19,13 +19,13 @@
         insert into user
         (
             username, password, role, is_available, 
-            is_deleted, create_time, update_time
+            is_deleted, create_time, update_username, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
             #{obj.username}, #{obj.password}, #{obj.role}, #{obj.isAvailable}, 
-            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateTime}
+            #{obj.isDeleted}, #{obj.createTime}, #{obj.updateUsername}, #{obj.updateTime}
         )
         </foreach>
     </insert>
@@ -51,8 +51,11 @@
             <if test="createTime != null">
                 create_time = #{createTime},
             </if>
+            <if test="updateUsername != null">
+                update_username = #{updateUsername},
+            </if>
             <if test="updateTime != null">
-                update_time = #{updateTime},
+                update_time = #{updateTime}
             </if>
         </set>
         where id = #{id}
@@ -67,7 +70,8 @@
             is_available = #{isAvailable},
             is_deleted = #{isDeleted},
             create_time = #{createTime},
-            update_time = #{updateTime},
+            update_username = #{updateUsername},
+            update_time = #{updateTime}
         </set>
         where id = #{id}
     </update>

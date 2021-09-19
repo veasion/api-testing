@@ -9,8 +9,10 @@ import cn.veasion.auto.model.ApiLogPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ApiTestCaseVO;
 import cn.veasion.auto.model.ProjectConfigPO;
+import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.service.ApiLogService;
 import cn.veasion.auto.service.ApiTestCaseService;
+import cn.veasion.auto.service.ProjectService;
 import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.ThreadUtils;
 import com.github.pagehelper.Page;
@@ -20,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.script.ScriptException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +43,8 @@ public class StrategyExecutor {
     @Resource
     private ApiLogService apiLogService;
     @Resource
+    private ProjectService projectService;
+    @Resource
     private ScriptExecutor scriptExecutor;
     @Resource
     private ApiTestCaseService apiTestCaseService;
@@ -57,14 +62,16 @@ public class StrategyExecutor {
         if (script && !StringUtils.hasText(strategy.getScript())) {
             throw new BusinessException("执行策略异常，脚本为空！策略: " + strategy.getName());
         }
-        ScriptContext scriptContext = scriptExecutor.createScriptContext(strategy.getProjectId());
+        ProjectPO projectPO = projectService.getById(strategy.getProjectId());
+        ProjectConfigPO projectConfig = projectPO.getProjectConfig();
+
+        ScriptContext scriptContext = scriptExecutor.createScriptContext(projectPO);
         scriptContext.setStrategy(strategy);
 
         ApiLogPO refLog = scriptContext.buildApiLog(null, true);
         apiLogService.addWithNewTx(refLog);
         strategy.setRefLogId(refLog.getId());
 
-        ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
         long timeMillis = System.currentTimeMillis();
         try {
             if (StringUtils.hasText(projectConfig.getBeforeScript())) {
@@ -73,13 +80,13 @@ public class StrategyExecutor {
             if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(strategy.getStrategy())) {
                 // 接口压测
                 refLog.setStatus(null);
-                runPressure(scriptContext);
+                this.runPressure(scriptContext);
                 if (refLog.getStatus() == null) {
                     refLog.setStatus(ApiLogPO.STATUS_SUC);
                 }
             } else {
                 // 任务执行
-                runStrategy(scriptContext);
+                this.runStrategy(scriptContext);
                 refLog.setStatus(ApiLogPO.STATUS_SUC);
             }
             if (StringUtils.hasText(projectConfig.getAfterScript())) {
@@ -144,8 +151,10 @@ public class StrategyExecutor {
     /**
      * 压测
      */
-    private void runPressure(ScriptContext scriptContext) throws Exception {
-        ApiExecuteStrategyPO strategy = scriptContext.getStrategy();
+    private void runPressure(ScriptContext scriptContextMain) throws Exception {
+        ProjectPO project = scriptContextMain.getProject();
+        ProjectConfigPO projectConfig = project.getProjectConfig();
+        ApiExecuteStrategyPO strategy = scriptContextMain.getStrategy();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(strategy.getType());
         int threadCount = Optional.ofNullable(strategy.getThreadCount()).orElse(1);
         ApiExecuteStrategyPO.ThreadStrategy threadStrategy = strategy.toThreadStrategy();
@@ -156,23 +165,39 @@ public class StrategyExecutor {
         // 线程用户
         List<Map<String, Object>> userEnvMaps = threadStrategy.getUserEnvMaps();
         AtomicInteger atomicIndex = new AtomicInteger(-1);
-        ThreadLocal<Map<String, Object>> userThreadLocal = ThreadLocal.withInitial(() -> {
-            if (threadStrategy.getUserEnvType() == null ||
-                    ApiExecuteStrategyPO.THREAD_ENV_TYPE_DEFAULT.equals(threadStrategy.getUserEnvType())) {
-                return null;
+        List<ScriptContext> threadScriptContexts = new ArrayList<>(threadCount);
+        ThreadLocal<ScriptContext> userThreadLocal = ThreadLocal.withInitial(() -> {
+            ScriptContext scriptContext = scriptExecutor.createScriptContext(project);
+            scriptContext.setStrategy(strategy);
+            scriptContext.setNeedResetEnv(false);
+            scriptContext.setRefLog(scriptContextMain.getRefLog());
+            try {
+                String beforeScript;
+                if (projectConfig != null && StringUtils.hasText(projectConfig.getBeforeScript())) {
+                    beforeScript = projectConfig.getBeforeScript();
+                } else {
+                    beforeScript = "1";
+                }
+                Map<String, Object> envMap = null;
+                if (ApiExecuteStrategyPO.THREAD_ENV_TYPE_CUSTOM.equals(threadStrategy.getUserEnvType())) {
+                    envMap = userEnvMaps.get(atomicIndex.updateAndGet(i -> ++i >= userEnvMaps.size() ? 0 : i));
+                }
+                scriptExecutor.executeScript(beforeScript, scriptContext, envMap);
+            } catch (Exception e) {
+                scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
+                log.error("执行前置脚本异常，项目: {}", project.getName(), e);
+                throw new BusinessException("执行前置脚本异常", e);
             }
-            return userEnvMaps.get(atomicIndex.updateAndGet(i -> ++i >= userEnvMaps.size() ? 0 : i));
+            threadScriptContexts.add(scriptContext);
+            return scriptContext;
         });
 
         long intervalInMillis = Optional.ofNullable(threadStrategy.getIntervalInMillis()).orElse(-1L);
         boolean isTime = ApiExecuteStrategyPO.THREAD_STRATEGY_TIME.equals(threadStrategy.getType());
         ApiLogPO exceptionLog = new ApiLogPO();
         Callable<?> task = () -> {
+            ScriptContext scriptContext = userThreadLocal.get();
             try {
-                Map<String, Object> envMap = userThreadLocal.get();
-                if (envMap != null) {
-                    scriptContext.getEnv().putAll(envMap);
-                }
                 if (script) {
                     scriptExecutor.execute(strategy, scriptContext);
                 } else {
@@ -196,7 +221,10 @@ public class StrategyExecutor {
             log.error("压测异常，策略: {}", strategy.getName(), e);
             throw e;
         } finally {
-            scriptContext.getRefLog().appendLog(exceptionLog.getMsg());
+            scriptContextMain.getRefLog().appendLog(exceptionLog.getMsg());
+            for (ScriptContext threadScriptContext : threadScriptContexts) {
+                scriptContextMain.getApiLogList().addAll(threadScriptContext.getApiLogList());
+            }
         }
     }
 

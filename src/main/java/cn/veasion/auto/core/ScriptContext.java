@@ -23,8 +23,8 @@ import java.util.Map;
 public class ScriptContext {
 
     private ApiLogPO refLog;
-    private Integer projectId;
     private ProjectPO project;
+    private boolean needResetEnv = true;
     private ApiExecuteStrategyPO strategy;
     private final List<ApiLogPO> apiLogList = new ArrayList<>();
     private final Map<String, ScriptBindBean> root = new HashMap<>();
@@ -37,11 +37,7 @@ public class ScriptContext {
     }
 
     public Integer getProjectId() {
-        return projectId;
-    }
-
-    void setProjectId(Integer projectId) {
-        this.projectId = projectId;
+        return this.getProject().getId();
     }
 
     public ProjectPO getProject() {
@@ -50,6 +46,14 @@ public class ScriptContext {
 
     void setProject(ProjectPO project) {
         this.project = project;
+    }
+
+    public boolean isNeedResetEnv() {
+        return needResetEnv;
+    }
+
+    public void setNeedResetEnv(boolean needResetEnv) {
+        this.needResetEnv = needResetEnv;
     }
 
     public ApiExecuteStrategyPO getStrategy() {
@@ -89,7 +93,7 @@ public class ScriptContext {
         } else if (this.refLog != null) {
             apiLog.setRefId(this.refLog.getId());
         }
-        apiLog.setProjectId(projectId);
+        apiLog.setProjectId(getProjectId());
         if (strategy != null) {
             apiLog.setExecuteStrategyId(strategy.getId());
         }
@@ -110,6 +114,10 @@ public class ScriptContext {
             }
         }
         return apiLog;
+    }
+
+    void setRefLog(ApiLogPO refLog) {
+        this.refLog = refLog;
     }
 
     public List<ApiLogPO> getApiLogList() {

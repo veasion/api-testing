@@ -3,6 +3,7 @@ package cn.veasion.auto.service;
 import cn.veasion.auto.mapper.ApiTestCaseMapper;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ApiTestCaseVO;
+import cn.veasion.auto.utils.UserUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class ApiTestCaseServiceImpl implements ApiTestCaseService {
 
     @Override
     public void saveOrUpdate(ApiTestCasePO apiTestCasePO) {
+        apiTestCasePO.setUpdateUsername(UserUtils.getUsername());
         if (apiTestCasePO.getId() == null) {
             apiTestCasePO.init();
             apiTestCaseMapper.insert(apiTestCasePO);
