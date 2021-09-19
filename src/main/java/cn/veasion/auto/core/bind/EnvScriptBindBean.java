@@ -70,6 +70,10 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
         envMap.get().put(key, value);
     }
 
+    public void putAll(Map<String, Object> map) {
+        envMap.get().putAll(map);
+    }
+
     public void setGlobal(String key, Object value) {
         putGlobal(key, value);
     }

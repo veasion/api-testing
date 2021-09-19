@@ -69,7 +69,7 @@ public interface ApiLogMapper {
     List<Map<String, Object>> groupDayStatusCount(ApiLogQueryVO apiLog);
 
     /**
-     * 接口耗时排行榜
+     * 接口耗时排行榜（支持定时任务，排除压测数据）
      */
     List<ApiLogVO> listRanking(ApiLogQueryVO apiLog);
 

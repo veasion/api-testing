@@ -21,8 +21,10 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.script.ScriptException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -46,6 +48,9 @@ public class StrategyExecutor {
     @Resource
     private StrategyCaseRelationMapper strategyCaseRelationMapper;
 
+    /**
+     * 策略执行（任务执行 or 接口压测）
+     */
     public void run(ApiExecuteStrategyVO strategy) {
         Integer type = strategy.getType();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(type);
@@ -66,14 +71,14 @@ public class StrategyExecutor {
                 scriptExecutor.executeScript(projectConfig.getBeforeScript(), scriptContext);
             }
             if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(strategy.getStrategy())) {
-                // 压测
+                // 接口压测
                 refLog.setStatus(null);
                 runPressure(scriptContext);
                 if (refLog.getStatus() == null) {
                     refLog.setStatus(ApiLogPO.STATUS_SUC);
                 }
             } else {
-                // 普通执行
+                // 任务执行
                 runStrategy(scriptContext);
                 refLog.setStatus(ApiLogPO.STATUS_SUC);
             }
@@ -89,31 +94,35 @@ public class StrategyExecutor {
             refLog.setStatus(ApiLogPO.STATUS_FAIL);
         } finally {
             refLog.setExecTime((int) (System.currentTimeMillis() - timeMillis));
-            List<ApiLogPO> batchLogs = scriptContext.getApiLogList();
-            int totalTime = 0;
-            Integer strategyStatus = ApiExecuteStrategyPO.STATUS_FAIL;
-            for (ApiLogPO log : batchLogs) {
-                if (log.getTime() != null) {
-                    totalTime += log.getTime();
-                }
-                if (ApiLogPO.STATUS_FAIL.equals(log.getStatus())) {
-                    refLog.setStatus(ApiLogPO.STATUS_FAIL);
-                } else if (ApiLogPO.STATUS_SUC.equals(log.getStatus())) {
-                    strategyStatus = ApiExecuteStrategyPO.STATUS_PART_SUC;
-                }
-            }
-            if (ApiLogPO.STATUS_SUC.equals(refLog.getStatus())) {
-                strategyStatus = ApiExecuteStrategyPO.STATUS_ALL_SUC;
-            }
-            refLog.setTime(totalTime);
-            apiLogService.updateWithNewTx(refLog);
-            // 批量添加日志
-            apiLogService.addAllWithNewTx(batchLogs);
-            batchLogs.clear();
-            System.gc();
-            // 修改策略状态
-            apiExecuteStrategyMapper.updateStatus(strategy.getId(), strategyStatus);
+            finallyUpdate(strategy, scriptContext, refLog);
         }
+    }
+
+    private void finallyUpdate(ApiExecuteStrategyVO strategy, ScriptContext scriptContext, ApiLogPO refLog) {
+        List<ApiLogPO> batchLogs = scriptContext.getApiLogList();
+        int totalTime = 0;
+        int strategyStatus = ApiExecuteStrategyPO.STATUS_FAIL;
+        for (ApiLogPO log : batchLogs) {
+            if (log.getTime() != null) {
+                totalTime += log.getTime();
+            }
+            if (ApiLogPO.STATUS_FAIL.equals(log.getStatus())) {
+                refLog.setStatus(ApiLogPO.STATUS_FAIL);
+            } else if (ApiLogPO.STATUS_SUC.equals(log.getStatus())) {
+                strategyStatus = ApiExecuteStrategyPO.STATUS_PART_SUC;
+            }
+        }
+        if (ApiLogPO.STATUS_SUC.equals(refLog.getStatus())) {
+            strategyStatus = ApiExecuteStrategyPO.STATUS_ALL_SUC;
+        }
+        refLog.setTime(totalTime);
+        apiLogService.updateWithNewTx(refLog);
+        // 批量添加日志
+        apiLogService.addAllWithNewTx(batchLogs);
+        batchLogs.clear();
+        System.gc();
+        // 修改策略状态
+        apiExecuteStrategyMapper.updateStatus(strategy.getId(), strategyStatus);
     }
 
     /**
@@ -142,11 +151,27 @@ public class StrategyExecutor {
         if (threadStrategy == null || threadStrategy.getType() == null) {
             throw new BusinessException("压测执行参数异常！策略: " + strategy.getName());
         }
+
+        // 线程用户
+        List<Map<String, Object>> userEnvMaps = threadStrategy.getUserEnvMaps();
+        AtomicInteger atomicIndex = new AtomicInteger(-1);
+        ThreadLocal<Map<String, Object>> userThreadLocal = ThreadLocal.withInitial(() -> {
+            if (threadStrategy.getUserEnvType() == null ||
+                    ApiExecuteStrategyPO.THREAD_ENV_TYPE_DEFAULT.equals(threadStrategy.getUserEnvType())) {
+                return null;
+            }
+            return userEnvMaps.get(atomicIndex.updateAndGet(i -> ++i >= userEnvMaps.size() ? 0 : i));
+        });
+
         long intervalInMillis = Optional.ofNullable(threadStrategy.getIntervalInMillis()).orElse(-1L);
         boolean isTime = ApiExecuteStrategyPO.THREAD_STRATEGY_TIME.equals(threadStrategy.getType());
         ApiLogPO exceptionLog = new ApiLogPO();
         Callable<?> task = () -> {
             try {
+                Map<String, Object> envMap = userThreadLocal.get();
+                if (envMap != null) {
+                    scriptContext.getEnv().putAll(envMap);
+                }
                 if (script) {
                     scriptExecutor.execute(strategy, scriptContext);
                 } else {

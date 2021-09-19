@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 执行策略
  *
@@ -16,16 +19,15 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
     public static final Integer TYPE_ALL_CASE = 1;
     public static final Integer TYPE_CASES = 2;
     public static final Integer TYPE_SCRIPT = 3;
-
     public static final Integer STRATEGY_JOB = 1;
     public static final Integer STRATEGY_PRESSURE = 2;
-
-    public static final Integer THREAD_STRATEGY_TIME = 1;
-    public static final Integer THREAD_STRATEGY_LOOP = 2;
-
     public static final Integer STATUS_PART_SUC = 1;
     public static final Integer STATUS_ALL_SUC = 2;
     public static final Integer STATUS_FAIL = 3;
+    public static final Integer THREAD_STRATEGY_TIME = 1;
+    public static final Integer THREAD_STRATEGY_LOOP = 2;
+    public static final Integer THREAD_ENV_TYPE_DEFAULT = 1;
+    public static final Integer THREAD_ENV_TYPE_CUSTOM = 2;
 
     /**
      * 项目id
@@ -81,6 +83,8 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
         Integer loopCount; // 执行多少次
         Long timeInMillis; // 压测时间
         Long intervalInMillis; // 并发间隔时间
+        Integer userEnvType; // 用户环境类型: 1 使用项目默认用户 2 使用自定义用户
+        List<Map<String, Object>> userEnvMaps; // 压测用户信息（账号密码等变量）
     }
 
 }

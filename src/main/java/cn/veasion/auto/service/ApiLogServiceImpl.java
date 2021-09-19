@@ -168,7 +168,7 @@ public class ApiLogServiceImpl implements ApiLogService {
         if (list == null || list.isEmpty()) {
             return list;
         }
-        loadOtherData(list, false, true, true, false);
+        loadOtherData(list, false, false, true, false);
         return list;
     }
 
