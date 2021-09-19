@@ -38,6 +38,9 @@ public interface ApiExecuteStrategyService {
 
     void triggerCronUpdate(Integer projectId, boolean isAdd);
 
+    /**
+     * 异步运行
+     */
     void runStrategy(ApiExecuteStrategyVO strategy);
 
 }

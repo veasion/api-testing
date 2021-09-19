@@ -116,13 +116,14 @@ public class StrategyExecutor {
             strategyStatus = ApiExecuteStrategyPO.STATUS_ALL_SUC;
         }
         refLog.setTime(totalTime);
-        apiLogService.updateWithNewTx(refLog);
         // 批量添加日志
         apiLogService.addAllWithNewTx(batchLogs);
-        batchLogs.clear();
-        System.gc();
         // 修改策略状态
         apiExecuteStrategyMapper.updateStatus(strategy.getId(), strategyStatus);
+        // 更新策略日志
+        apiLogService.updateWithNewTx(refLog);
+        batchLogs.clear();
+        System.gc();
     }
 
     /**

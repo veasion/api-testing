@@ -12,6 +12,7 @@ import cn.veasion.auto.model.ApiLogVO;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiTestCasePO;
 import cn.veasion.auto.model.ProjectPO;
+import cn.veasion.auto.utils.Constants;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.http.client.utils.DateUtils;
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -67,15 +70,26 @@ public class ApiLogServiceImpl implements ApiLogService {
         if (apiLogPO.getId() == null) {
             apiLogPO.init();
         }
+        String msg = apiLogPO.getMsg();
+        if (msg != null && msg.length() > Constants.MAX_LOG_MSG_LENGTH) {
+            apiLogPO.setMsg(msg.substring(0, Constants.MAX_LOG_MSG_LENGTH));
+        }
         return apiLogMapper.insert(apiLogPO);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int addAllWithNewTx(List<ApiLogPO> list) {
+        if (list == null || list.isEmpty()) {
+            return 0;
+        }
         for (ApiLogPO apiLogPO : list) {
             if (apiLogPO.getId() == null) {
                 apiLogPO.init();
+            }
+            String msg = apiLogPO.getMsg();
+            if (msg != null && msg.length() > Constants.MAX_LOG_MSG_LENGTH) {
+                apiLogPO.setMsg(msg.substring(0, Constants.MAX_LOG_MSG_LENGTH));
             }
         }
         if (list.size() > SPLIT_COUNT) {
@@ -182,13 +196,17 @@ public class ApiLogServiceImpl implements ApiLogService {
             return result;
         }
         ApiLogPO apiLogPO = list.get(0);
+        if (ApiLogPO.STATUS_RUNNING.equals(apiLogPO.getStatus())) {
+            return result;
+        }
         ApiLogQueryVO apiLog = new ApiLogQueryVO();
-        apiLog.setRefId(logId);
+        apiLog.setRefId(apiLogPO.getId());
         Map<Integer, Integer> countMap = countStatus(apiLog);
 
         int threadCount = Optional.ofNullable(strategyPO.getThreadCount()).orElse(1);
         int reqCount = countMap.values().stream().reduce(Integer::sum).orElse(0);
         int avgTime = reqCount > 0 ? apiLogPO.getTime() / reqCount : 0;
+        Integer sucCount = countMap.getOrDefault(ApiLogPO.STATUS_SUC, 0);
 
         // 并发数
         result.put("threadCount", threadCount);
@@ -198,16 +216,25 @@ public class ApiLogServiceImpl implements ApiLogService {
         result.put("avgTime", avgTime);
         // 总执行时长
         result.put("execTime", apiLogPO.getExecTime());
-        // 各状态数量
-        result.put("statusCountList", countMap);
+        // 成功数
+        result.put("sucCount", sucCount);
         // 总请求数
         result.put("reqCount", reqCount);
-        // QPS(TPS)
-        result.put("tps", avgTime > 0 ? ((threadCount * 1000) / avgTime) : null);
+        // 失败数
+        result.put("failCount", countMap.getOrDefault(ApiLogPO.STATUS_FAIL, 0));
         // 开始时间
         result.put("startTime", DateUtils.formatDate(apiLogPO.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
         // 开始时间
-        result.put("endTime", DateUtils.formatDate(apiLogPO.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+        result.put("endTime", DateUtils.formatDate(apiLogPO.getUpdateTime(), "HH:mm:ss"));
+        // 成功率
+        BigDecimal sucRate = reqCount > 0 ? new BigDecimal(sucCount).divide(new BigDecimal(reqCount), 2, RoundingMode.UP) : BigDecimal.ZERO;
+        result.put("sucRateBfb", sucRate.multiply(new BigDecimal(100)) + "%");
+        // QPS(TPS)
+        BigDecimal tps = avgTime > 0 ? new BigDecimal(threadCount).multiply(new BigDecimal(1000)).divide(new BigDecimal(avgTime), 2, RoundingMode.UP) : BigDecimal.ZERO;
+        result.put("tps", tps);
+        // 评分(0-5)
+        BigDecimal rate = tps.divide(new BigDecimal(500), 2, RoundingMode.UP).multiply(sucRate);
+        result.put("rate", BigDecimal.ONE.compareTo(rate) <= 0 ? 5 : new BigDecimal(5).multiply(rate));
 
         return result;
     }

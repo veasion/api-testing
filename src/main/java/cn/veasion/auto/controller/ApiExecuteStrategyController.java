@@ -114,10 +114,17 @@ public class ApiExecuteStrategyController extends BaseController {
     }
 
     @GetMapping("/runStrategy")
-    public R<String> runStrategy(Integer id) {
+    public R<String> runStrategy(Integer id) throws InterruptedException {
         ApiExecuteStrategyVO strategyVO = apiExecuteStrategyService.queryStrategyById(id);
         notNull(strategyVO, "策略不存在");
         apiExecuteStrategyService.runStrategy(strategyVO);
+        int count = 0;
+        while (strategyVO.getRefLogId() == null) {
+            Thread.sleep(200);
+            if (++count > 10) {
+                break;
+            }
+        }
         return R.ok(strategyVO.getRefLogId());
     }
 

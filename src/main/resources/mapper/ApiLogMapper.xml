@@ -115,21 +115,21 @@
     <select id="queryList" resultType="cn.veasion.auto.model.ApiLogVO">
         select * from api_log t where t.is_deleted = 0
         <include refid="whereSQL" />
-        order by t.id desc
+        order by t.create_time desc
     </select>
 
     <select id="queryByStrategyId" resultType="cn.veasion.auto.model.ApiLogPO">
         select * from api_log where is_deleted = 0 and ref_id = '0'
         and execute_strategy_id = #{strategyId}
-        <if test="logId != null">
+        <if test="logId != null and logId.trim() != ''">
             and id = #{logId}
         </if>
-        order by id desc
+        order by create_time desc
     </select>
 
     <select id="countStatus" resultType="hashmap">
         select status, count(1) as count from api_log t
-        where is_deleted = 0 and ref_id &lt;&gt; 0
+        where is_deleted = 0 and ref_id &lt;&gt; '0'
         <include refid="whereSQL" />
         group by status
     </select>
@@ -141,7 +141,7 @@
         COUNT(IF(status = 2, 1, NULL)) as 'status2',
         COUNT(IF(status = 3, 1, NULL)) as 'status3'
         from api_log t
-        where is_deleted = 0 and ref_id &lt;&gt; 0
+        where is_deleted = 0 and ref_id &lt;&gt; '0'
         <include refid="whereSQL" />
         group by DATE_FORMAT(create_time, '%Y-%m-%d')
     </select>
@@ -152,7 +152,7 @@
         inner join project p on t.project_id = p.id and p.is_deleted = 0
         inner join api_execute_strategy s on t.execute_strategy_id = s.id and s.strategy = 1 and s.is_deleted = 0
         left join api_request api on api.id = t.api_request_id and api.is_deleted = 0 and api.is_available = 1
-        where t.is_deleted = 0 and t.ref_id &lt;&gt; '0'
+        where t.is_deleted = 0 and t.ref_id &lt;&gt; '0' and t.time > 0
         <include refid="whereSQL" />
         group by t.execute_strategy_id, t.url
         order by t.time desc limit 20
