@@ -133,6 +133,11 @@
         where t.is_deleted = 0 and t.is_available = 1
     </select>
 
+    <select id="queryByApiNames" resultType="java.lang.String">
+        select t.api_name from api_request t where t.is_deleted = 0 and t.project_id = #{projectId}
+        and t.api_name in <foreach collection="apiNames" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+
     <select id="queryByIds" resultType="cn.veasion.auto.model.ApiRequestPO">
         select * from api_request t where is_deleted = 0
         and id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>

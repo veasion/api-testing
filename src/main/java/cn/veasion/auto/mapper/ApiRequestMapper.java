@@ -47,7 +47,7 @@ public interface ApiRequestMapper {
     ApiRequestPO queryById(Integer id);
 
     /**
-     * 根据username查询
+     * 查询根据apiName
      */
     ApiRequestPO queryByApiName(@Param("apiName") String apiName, @Param("projectId") Integer projectId, @Param("notEqId") Integer notEqId);
 
@@ -57,6 +57,8 @@ public interface ApiRequestMapper {
     List<ApiRequestVO> queryList(ApiRequestVO apiRequestVO);
 
     List<String> queryAllApiName(@Param("projectId") Integer projectId);
+
+    List<String> queryByApiNames(@Param("projectId") Integer projectId, @Param("apiNames") List<String> apiNames);
 
     List<ApiRequestPO> queryByIds(List<Integer> ids);
 

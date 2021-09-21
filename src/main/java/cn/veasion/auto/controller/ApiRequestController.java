@@ -1,20 +1,31 @@
 package cn.veasion.auto.controller;
 
+import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.model.ApiRequestVO;
 import cn.veasion.auto.model.Page;
 import cn.veasion.auto.model.ApiRequestPO;
+import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiRequestService;
-import com.sun.org.apache.bcel.internal.Constants;
+import cn.veasion.auto.service.ProjectService;
+import cn.veasion.auto.utils.Constants;
+import cn.veasion.auto.utils.ExcelExportUtils;
+import cn.veasion.auto.utils.ExcelImportUtils;
+import cn.veasion.auto.utils.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ApiRequestController
@@ -27,6 +38,8 @@ import java.util.List;
 public class ApiRequestController extends BaseController {
 
     @Resource
+    private ProjectService projectService;
+    @Resource
     private ApiRequestService apiRequestService;
 
     @GetMapping("/listPage")
@@ -38,7 +51,7 @@ public class ApiRequestController extends BaseController {
 
     @GetMapping("/list")
     public R<List<ApiRequestVO>> list(ApiRequestVO apiRequestVO) {
-        return R.ok(apiRequestService.listPage(apiRequestVO, 1, Constants.MAX_CODE_SIZE));
+        return R.ok(apiRequestService.listPage(apiRequestVO, 1, Constants.MAX_PAGE_SIZE));
     }
 
     @GetMapping("/getById")
@@ -75,5 +88,58 @@ public class ApiRequestController extends BaseController {
         apiRequestService.delete(id);
         return R.ok();
     }
+
+    @GetMapping("/export")
+    public void export(HttpServletResponse response, Integer projectId) throws IOException {
+        ApiRequestVO apiRequest = new ApiRequestVO();
+        apiRequest.setProjectId(projectId);
+        ExcelExportUtils.export(response, "接口.xlsx", exportMap, apiRequestService.listPage(apiRequest, 1, Constants.MAX_EXPORT_SIZE));
+    }
+
+    @GetMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response) throws IOException {
+        ExcelExportUtils.export(response, "接口导入模板.xlsx", exportMap.values().toArray(new String[]{}));
+    }
+
+    @PostMapping("/import")
+    public void importExcel(@RequestParam("file") MultipartFile file,
+                            @RequestParam("projectId") Integer projectId,
+                            @RequestParam(required = false, defaultValue = "false") boolean autoCase) throws IOException {
+        ProjectPO projectPO = projectService.getById(projectId);
+        if (projectPO == null) {
+            throw new BusinessException("项目不存在");
+        }
+        LinkedHashMap<String, String> importMap = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : exportMap.entrySet()) {
+            importMap.put(entry.getValue(), entry.getKey());
+        }
+        List<ApiRequestPO> list = ExcelImportUtils.parse(file.getInputStream(), importMap, ApiRequestPO.class);
+        for (int i = 0; i < list.size(); i++) {
+            ApiRequestPO apiRequestPO = list.get(i);
+            if (!StringUtils.hasText(apiRequestPO.getApiName())) {
+                throw new BusinessException("第" + (i + 1) + "行命名为空");
+            }
+            if (!StringUtils.hasText(apiRequestPO.getUrl())) {
+                throw new BusinessException("第" + (i + 1) + "url为空");
+            }
+            if (!StringUtils.hasText(apiRequestPO.getApiDesc())) {
+                throw new BusinessException("第" + (i + 1) + "描述为空");
+            }
+            apiRequestPO.init();
+            apiRequestPO.setProjectId(projectId);
+        }
+        apiRequestService.importWithTx(projectPO, list, autoCase);
+    }
+
+    private static LinkedHashMap<String, String> exportMap = new LinkedHashMap<String, String>() {
+        {
+            put("apiName", "命名");
+            put("apiDesc", "接口描述");
+            put("method", "请求方法");
+            put("url", "请求URL");
+            put("headersJson", "请求头");
+            put("body", "请求Body");
+        }
+    };
 
 }

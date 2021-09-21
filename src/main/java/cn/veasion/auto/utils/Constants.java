@@ -5,6 +5,7 @@ public final class Constants {
     public static final Integer YES = 1;
     public static final Integer NO = 0;
     public static final int MAX_PAGE_SIZE = 1000;
+    public static final int MAX_EXPORT_SIZE = 20000;
     public static final int MAX_LOG_MSG_LENGTH = 10000;
 
     public static final String LINE = "\r\n";

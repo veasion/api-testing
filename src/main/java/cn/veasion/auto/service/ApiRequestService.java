@@ -2,6 +2,7 @@ package cn.veasion.auto.service;
 
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiRequestVO;
+import cn.veasion.auto.model.ProjectPO;
 import com.github.pagehelper.Page;
 
 import java.util.List;
@@ -25,5 +26,7 @@ public interface ApiRequestService {
     int delete(int id);
 
     List<String> queryAllApiName(Integer projectId);
+
+    int importWithTx(ProjectPO projectPO, List<ApiRequestPO> list, boolean autoCase);
 
 }

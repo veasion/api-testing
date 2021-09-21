@@ -2,8 +2,11 @@ package cn.veasion.auto.service;
 
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiRequestMapper;
+import cn.veasion.auto.mapper.ApiTestCaseMapper;
 import cn.veasion.auto.model.ApiRequestPO;
 import cn.veasion.auto.model.ApiRequestVO;
+import cn.veasion.auto.model.ApiTestCasePO;
+import cn.veasion.auto.model.ProjectPO;
 import cn.veasion.auto.utils.StringUtils;
 import cn.veasion.auto.utils.UserUtils;
 import com.alibaba.fastjson.JSON;
@@ -12,8 +15,11 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * ApiRequestServiceImpl
@@ -26,6 +32,8 @@ public class ApiRequestServiceImpl implements ApiRequestService {
 
     @Resource
     private ApiRequestMapper apiRequestMapper;
+    @Resource
+    private ApiTestCaseMapper apiTestCaseMapper;
 
     @Override
     public ApiRequestPO getById(int id) {
@@ -80,4 +88,30 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     public List<String> queryAllApiName(Integer projectId) {
         return apiRequestMapper.queryAllApiName(projectId);
     }
+
+    @Override
+    public int importWithTx(ProjectPO projectPO, List<ApiRequestPO> list, boolean autoCase) {
+        List<String> apiNames = list.stream().map(ApiRequestPO::getApiName).collect(Collectors.toList());
+        List<String> hasList = apiRequestMapper.queryByApiNames(projectPO.getId(), apiNames);
+        if (!hasList.isEmpty()) {
+            throw new BusinessException("命名" + Arrays.toString(hasList.toArray()) + "已存在");
+        }
+        int count = apiRequestMapper.insertAll(list);
+        if (autoCase && count > 0) {
+            List<ApiTestCasePO> caseList = new ArrayList<>();
+            ApiTestCasePO apiTestCasePO;
+            for (ApiRequestPO apiRequestPO : list) {
+                apiTestCasePO = new ApiTestCasePO();
+                apiTestCasePO.init();
+                apiTestCasePO.setProjectId(projectPO.getId());
+                apiTestCasePO.setCaseName(apiRequestPO.getApiDesc());
+                apiTestCasePO.setCaseDesc(apiRequestPO.getApiName());
+                apiTestCasePO.setScript(String.format("http.request('%s')", apiRequestPO.getApiName()));
+                caseList.add(apiTestCasePO);
+            }
+            apiTestCaseMapper.insertAll(caseList);
+        }
+        return count;
+    }
+
 }
