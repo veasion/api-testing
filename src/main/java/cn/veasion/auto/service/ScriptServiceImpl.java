@@ -168,6 +168,10 @@ public class ScriptServiceImpl implements ScriptService {
             throw new BusinessException("项目不存在");
         }
         Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> tempVar = new HashMap<>();
+        Map<String, Object> apiNameMap = new HashMap<>();
+        resultMap.put("tempVar", tempVar);
+        resultMap.put("apiNameMap", apiNameMap);
         ProjectConfigPO projectConfig = projectPO.getProjectConfig();
         ScriptContext scriptContext = scriptExecutor.createScriptContext(projectPO);
         if (projectConfig != null && StringUtils.hasText(projectConfig.getBeforeScript())) {
@@ -181,13 +185,24 @@ public class ScriptServiceImpl implements ScriptService {
         List<Future<?>> tasks = new ArrayList<>(varApiNameMap.size());
         for (Map.Entry<String, String> entry : varApiNameMap.entrySet()) {
             tasks.add(executor.submit(() -> {
+                String apiName = entry.getValue();
+                ApiRequestPO apiRequestPO = apiRequestService.queryByApiName(apiName, projectId);
+                if (apiRequestPO == null) {
+                    return null;
+                }
                 try {
-                    Object response = scriptExecutor.executeScript(String.format("http.request('%s')", entry.getValue()), scriptContext);
+                    Set<String> varKeys = EvalAnalysisUtils.matcherKeys(apiRequestPO.getUrl() + apiRequestPO.getBody() + apiRequestPO.getHeadersJson());
+                    if (varKeys.size() > 0) {
+                        Map<String, Object> map = new HashMap<>();
+                        varKeys.forEach(k -> map.put(k, null));
+                        apiNameMap.put(apiName, map);
+                    }
+                    Object response = scriptExecutor.execute(apiRequestPO, scriptContext);
                     if (response instanceof Map || response instanceof Collection) {
-                        resultMap.put(entry.getKey(), response);
+                        tempVar.put(entry.getKey(), response);
                     }
                 } catch (Exception e) {
-                    log.error("请求异常, http.request('{}')", entry.getValue(), e);
+                    log.error("请求异常, http.request('{}')", apiName, e);
                 }
                 return null;
             }));

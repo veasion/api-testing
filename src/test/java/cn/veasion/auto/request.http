@@ -48,4 +48,4 @@ Content-Type: application/json
 }
 
 ### 手动触发job
-GET http://localhost:8080/public/job/check
+GET http://localhost:8080/api/public/job/check

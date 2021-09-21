@@ -46,6 +46,12 @@ public class ApiRequestController extends BaseController {
         return R.ok(apiRequestService.getById(id));
     }
 
+    @GetMapping("/queryByApiName")
+    public R<ApiRequestPO> queryByApiName(@RequestParam("apiName") String apiName,
+                                          @RequestParam(value = "projectId", required = false) Integer projectId) {
+        return R.ok(apiRequestService.queryByApiName(apiName, projectId));
+    }
+
     @PostMapping("/add")
     public R<Object> add(@RequestBody ApiRequestPO apiRequestPO) {
         apiRequestPO.setId(null);

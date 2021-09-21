@@ -8,7 +8,6 @@ import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiExecuteStrategyService;
 import cn.veasion.auto.utils.Constants;
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -126,23 +122,6 @@ public class ApiExecuteStrategyController extends BaseController {
             }
         }
         return R.ok(strategyVO.getRefLogId());
-    }
-
-    @GetMapping("/nextTriggerTime")
-    public R<List<String>> nextTriggerTime(String cron) {
-        List<String> result = new ArrayList<>();
-        CronExpression cronExpression = CronExpression.parse(cron);
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime lastTime = LocalDateTime.now();
-        for (int i = 0; i < 5; i++) {
-            lastTime = cronExpression.next(lastTime);
-            if (lastTime != null) {
-                result.add(dateTimeFormatter.format(lastTime));
-            } else {
-                break;
-            }
-        }
-        return R.ok(result);
     }
 
 }

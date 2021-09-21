@@ -5,7 +5,6 @@ import cn.veasion.auto.model.ApiLogQueryVO;
 import cn.veasion.auto.model.ApiLogVO;
 import cn.veasion.auto.model.R;
 import cn.veasion.auto.service.ApiLogService;
-import cn.veasion.auto.utils.CpuMemoryUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,16 +33,6 @@ public class IndexController {
     @RequestMapping("/listRanking")
     public R<List<ApiLogVO>> listRanking(ApiLogQueryVO apiLog) {
         return R.ok(apiLogService.listRanking(apiLog));
-    }
-
-    @RequestMapping("/serverInfo")
-    public R<Object> serverInfo() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("cpuUsage", CpuMemoryUtils.cpuLoad());
-        data.put("memoryUsage", CpuMemoryUtils.memoryLoad());
-        data.put("jvmUsage", CpuMemoryUtils.jvmLoad());
-        data.put("updateTime", new Date());
-        return R.ok(data);
     }
 
     @RequestMapping("/chartInfo")
