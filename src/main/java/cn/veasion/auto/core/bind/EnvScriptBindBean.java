@@ -27,10 +27,7 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
     private ThreadLocal<Map<String, Object>> envMap = ThreadLocal.withInitial(HashMap::new);
 
     public Object eval(String str) {
-        return EvalAnalysisUtils.eval(str, (Function<String, ?>) key -> {
-            Object obj = get(key);
-            return obj == null ? "" : obj;
-        });
+        return EvalAnalysisUtils.eval(str, (Function<String, ?>) this::get);
     }
 
     @SuppressWarnings("unchecked")
@@ -58,7 +55,7 @@ public class EnvScriptBindBean extends AbstractScriptBindBean {
                     obj = obj.toString();
                 }
             }
-            return obj == null ? "" : obj;
+            return obj;
         });
     }
 

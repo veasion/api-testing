@@ -78,7 +78,8 @@ public class EvalAnalysisUtils {
         matcher = EL_PATTERN.matcher(str);
         while (matcher.find()) {
             sb.append(str.substring(index, matcher.start()));
-            sb.append(parse(matcher.group(1), object));
+            Object val = parse(matcher.group(1), object);
+            sb.append(val == null ? "" : val.toString());
             index = matcher.end();
         }
         sb.append(str.substring(index));
@@ -278,7 +279,12 @@ public class EvalAnalysisUtils {
         Set<String> keys = new HashSet<>();
         Matcher matcher = EL_PATTERN.matcher(str);
         while (matcher.find()) {
-            keys.add(matcher.group(1).trim());
+            String key = matcher.group(1).trim();
+            if (key.contains("|")) {
+                keys.add(key.split("\\|")[0]);
+            } else {
+                keys.add(key);
+            }
         }
         return keys;
     }
