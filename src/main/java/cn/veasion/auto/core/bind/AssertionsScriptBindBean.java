@@ -109,7 +109,7 @@ public class AssertionsScriptBindBean extends AbstractScriptBindBean {
         throwException(message + " => 期望值相等，但结果不相等 " + obj1 + " != " + obj2);
     }
 
-    private void throwException(String message) {
+    public void throwException(String message) {
         throw new AssertException(message);
     }
 

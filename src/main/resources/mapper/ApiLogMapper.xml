@@ -97,7 +97,7 @@
     </update>
 
     <delete id="deleteLogs">
-        delete from api_log t where create_time &lt;= #{value}
+        delete from api_log where create_time &lt;= #{value}
     </delete>
 
     <select id="queryById" resultType="cn.veasion.auto.model.ApiLogPO">
