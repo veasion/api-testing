@@ -249,6 +249,9 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
     }
 
     private String buildReqLog(HttpUtils.HttpRequest request, HttpUtils.HttpResponse response) {
+        if (scriptContext.getEnv().get("disable-log") != null) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder(Constants.LINE);
         if (StringUtils.hasText(request.getMethod())) {
             sb.append(request.getMethod()).append(" ");

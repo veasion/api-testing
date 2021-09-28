@@ -90,21 +90,24 @@ public class ApiRequestController extends BaseController {
     }
 
     @GetMapping("/export")
-    public void export(HttpServletResponse response, Integer projectId) throws IOException {
-        ApiRequestVO apiRequest = new ApiRequestVO();
-        apiRequest.setProjectId(projectId);
-        ExcelExportUtils.export(response, "接口.xlsx", exportMap, apiRequestService.listPage(apiRequest, 1, Constants.MAX_EXPORT_SIZE));
+    public void export(HttpServletResponse response, ApiRequestVO apiRequest) throws IOException {
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        if (apiRequest.getProjectId() == null) {
+            map.put("projectName", "项目名称");
+        }
+        map.putAll(exportMap);
+        ExcelExportUtils.export(response, "接口.xlsx", map, apiRequestService.listPage(apiRequest, 1, Constants.MAX_EXPORT_SIZE));
     }
 
-    @GetMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response) throws IOException {
+    @GetMapping("/downloadTemplate")
+    public void downloadTemplate(HttpServletResponse response) throws IOException {
         ExcelExportUtils.export(response, "接口导入模板.xlsx", exportMap.values().toArray(new String[]{}));
     }
 
     @PostMapping("/import")
-    public void importExcel(@RequestParam("file") MultipartFile file,
-                            @RequestParam("projectId") Integer projectId,
-                            @RequestParam(required = false, defaultValue = "false") boolean autoCase) throws IOException {
+    public R<Object> importExcel(@RequestParam("file") MultipartFile file,
+                                 @RequestParam("projectId") Integer projectId,
+                                 @RequestParam(required = false, defaultValue = "false") boolean autoCase) throws IOException {
         ProjectPO projectPO = projectService.getById(projectId);
         if (projectPO == null) {
             throw new BusinessException("项目不存在");
@@ -114,6 +117,9 @@ public class ApiRequestController extends BaseController {
             importMap.put(entry.getValue(), entry.getKey());
         }
         List<ApiRequestPO> list = ExcelImportUtils.parse(file.getInputStream(), importMap, ApiRequestPO.class);
+        if (list == null || list.isEmpty()) {
+            throw new BusinessException("数据不能为空");
+        }
         for (int i = 0; i < list.size(); i++) {
             ApiRequestPO apiRequestPO = list.get(i);
             if (!StringUtils.hasText(apiRequestPO.getApiName())) {
@@ -128,7 +134,8 @@ public class ApiRequestController extends BaseController {
             apiRequestPO.init();
             apiRequestPO.setProjectId(projectId);
         }
-        apiRequestService.importWithTx(projectPO, list, autoCase);
+        int count = apiRequestService.importWithTx(projectPO, list, autoCase);
+        return R.ok(count);
     }
 
     private static LinkedHashMap<String, String> exportMap = new LinkedHashMap<String, String>() {
