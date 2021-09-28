@@ -45,8 +45,9 @@ public class ScriptController extends BaseController {
     @GetMapping("/toScript")
     public R<String> toScript(@RequestParam(required = false) Integer id,
                               @RequestParam(required = false) Integer projectId,
-                              @RequestParam(required = false) String apiName) {
-        return R.ok(scriptService.toScript(id, projectId, apiName));
+                              @RequestParam(required = false) String apiName,
+                              @RequestParam(required = false) Boolean var) {
+        return R.ok(scriptService.toScript(id, projectId, apiName, var));
     }
 
     @GetMapping("/apiNameTips")

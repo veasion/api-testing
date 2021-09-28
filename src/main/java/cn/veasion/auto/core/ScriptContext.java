@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ScriptContext
@@ -24,13 +25,13 @@ public class ScriptContext {
 
     private ApiLogPO refLog;
     private ProjectPO project;
-    private boolean needResetEnv = true;
     private ApiExecuteStrategyPO strategy;
     private final List<ApiLogPO> apiLogList = new ArrayList<>();
     private final Map<String, ScriptBindBean> root = new HashMap<>();
+    private final Map<String, Object> contextMap = new ConcurrentHashMap<>();
     private final ThreadLocal<ApiTestCasePO> threadLocalCase = new ThreadLocal<>();
-    private List<RequestProcessor> requestProcessors = new ArrayList<>();
-    private List<ResponseProcessor> responseProcessors = new ArrayList<>();
+    private final List<RequestProcessor> requestProcessors = new ArrayList<>();
+    private final List<ResponseProcessor> responseProcessors = new ArrayList<>();
 
     public ApiLogPO getRefLog() {
         return refLog;
@@ -48,14 +49,6 @@ public class ScriptContext {
         this.project = project;
     }
 
-    public boolean isNeedResetEnv() {
-        return needResetEnv;
-    }
-
-    public void setNeedResetEnv(boolean needResetEnv) {
-        this.needResetEnv = needResetEnv;
-    }
-
     public ApiExecuteStrategyPO getStrategy() {
         return strategy;
     }
@@ -66,6 +59,10 @@ public class ScriptContext {
 
     public Map<String, ScriptBindBean> getRoot() {
         return root;
+    }
+
+    public Map<String, Object> getContextMap() {
+        return contextMap;
     }
 
     public EnvScriptBindBean getEnv() {
@@ -79,6 +76,10 @@ public class ScriptContext {
 
     ThreadLocal<ApiTestCasePO> getThreadLocalCase() {
         return threadLocalCase;
+    }
+
+    public ApiTestCasePO getTestCase() {
+        return threadLocalCase.get();
     }
 
     public ApiLogPO buildApiLog(ApiRequestPO requestPO) {

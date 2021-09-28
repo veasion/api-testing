@@ -169,7 +169,6 @@ public class StrategyExecutor {
         ThreadLocal<ScriptContext> userThreadLocal = ThreadLocal.withInitial(() -> {
             ScriptContext scriptContext = scriptExecutor.createScriptContext(project);
             scriptContext.setStrategy(strategy);
-            scriptContext.setNeedResetEnv(false);
             scriptContext.setRefLog(scriptContextMain.getRefLog());
             try {
                 String beforeScript;
@@ -178,11 +177,14 @@ public class StrategyExecutor {
                 } else {
                     beforeScript = "1";
                 }
-                Map<String, Object> envMap = null;
+                Map<String, Object> contextMap = null;
                 if (ApiExecuteStrategyPO.THREAD_ENV_TYPE_CUSTOM.equals(threadStrategy.getUserEnvType())) {
-                    envMap = userEnvMaps.get(atomicIndex.updateAndGet(i -> ++i >= userEnvMaps.size() ? 0 : i));
+                    contextMap = userEnvMaps.get(atomicIndex.updateAndGet(i -> ++i >= userEnvMaps.size() ? 0 : i));
                 }
-                scriptExecutor.executeScript(beforeScript, scriptContext, envMap);
+                if (contextMap != null) {
+                    scriptContext.getContextMap().putAll(contextMap);
+                }
+                scriptExecutor.executeScript(beforeScript, scriptContext);
             } catch (Exception e) {
                 scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
                 log.error("执行前置脚本异常，项目: {}", project.getName(), e);

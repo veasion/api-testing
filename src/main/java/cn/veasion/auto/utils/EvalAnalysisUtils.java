@@ -275,12 +275,12 @@ public class EvalAnalysisUtils {
         return null;
     }
 
-    public static Set<String> matcherKeys(String str) {
+    public static Set<String> matcherKeys(String str, boolean trimDefault) {
         Set<String> keys = new HashSet<>();
         Matcher matcher = EL_PATTERN.matcher(str);
         while (matcher.find()) {
             String key = matcher.group(1).trim();
-            if (key.contains("|")) {
+            if (trimDefault && key.contains("|")) {
                 keys.add(key.split("\\|")[0]);
             } else {
                 keys.add(key);

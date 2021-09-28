@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;

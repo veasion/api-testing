@@ -108,7 +108,7 @@ public class ScriptServiceImpl implements ScriptService {
     }
 
     @Override
-    public String toScript(Integer id, Integer projectId, String apiName) {
+    public String toScript(Integer id, Integer projectId, String apiName, Boolean var) {
         ApiRequestPO obj;
         if (id != null) {
             obj = apiRequestService.getById(id);
@@ -120,8 +120,12 @@ public class ScriptServiceImpl implements ScriptService {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("// ").append(obj.getApiDesc().replace(Constants.LINE, ""));
-        sb.append(Constants.LINE).append("http.request('").append(obj.getApiName()).append("'");
-        Set<String> keys = EvalAnalysisUtils.matcherKeys(obj.getUrl() + obj.getBody() + obj.getHeadersJson());
+        sb.append(Constants.LINE);
+        if (Boolean.TRUE.equals(var)) {
+            sb.append("let response = ");
+        }
+        sb.append("http.request('").append(obj.getApiName()).append("'");
+        Set<String> keys = EvalAnalysisUtils.matcherKeys(obj.getUrl() + obj.getBody() + obj.getHeadersJson(), false);
         if (keys.size() > 0) {
             handleScriptParams(obj.getProjectId(), sb, keys);
         }
@@ -191,7 +195,7 @@ public class ScriptServiceImpl implements ScriptService {
                     return null;
                 }
                 try {
-                    Set<String> varKeys = EvalAnalysisUtils.matcherKeys(apiRequestPO.getUrl() + apiRequestPO.getBody() + apiRequestPO.getHeadersJson());
+                    Set<String> varKeys = EvalAnalysisUtils.matcherKeys(apiRequestPO.getUrl() + apiRequestPO.getBody() + apiRequestPO.getHeadersJson(), true);
                     if (varKeys.size() > 0) {
                         Map<String, Object> map = new HashMap<>();
                         varKeys.forEach(k -> map.put(k, null));
@@ -249,7 +253,12 @@ public class ScriptServiceImpl implements ScriptService {
         if (keys.size() > 0) {
             JSONObject params = new JSONObject();
             for (String key : keys) {
-                params.put(key, null);
+                if (key.contains("|")) {
+                    String[] array = key.split("\\|");
+                    params.put(array[0], array[1]);
+                } else {
+                    params.put(key, null);
+                }
             }
             sb.append(", ");
             sb.append(params.toString(SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue).replace("\":", "\": "));

@@ -50,7 +50,6 @@ public class ScriptExecutor {
         }
         ScriptContext scriptContext = new ScriptContext();
         scriptContext.setProject(projectPO);
-        scriptContext.setNeedResetEnv(true);
         return scriptContext;
     }
 
@@ -71,9 +70,7 @@ public class ScriptExecutor {
                         ScriptBindBean.class, AbstractScriptBindBean.class));
             }
         }
-        if (scriptContext.isNeedResetEnv()) {
-            scriptContext.getEnv().reset();
-        }
+        scriptContext.getEnv().reset();
         bindings.put(SCRIPT_CONTEXT_VAR, scriptContext);
         return scriptEngine;
     }
@@ -115,9 +112,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，script: {}", script, e);
             throw e;
         } finally {
-            if (scriptContext.isNeedResetEnv()) {
-                scriptContext.getEnv().reset();
-            }
+            scriptContext.getEnv().reset();
         }
     }
 
@@ -132,9 +127,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，策略: {}", strategyPO.getName(), e);
             throw e;
         } finally {
-            if (scriptContext.isNeedResetEnv()) {
-                scriptContext.getEnv().reset();
-            }
+            scriptContext.getEnv().reset();
         }
     }
 
@@ -149,9 +142,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，用例: {}", testCasePO.getCaseName(), e);
             throw e;
         } finally {
-            if (scriptContext.isNeedResetEnv()) {
-                scriptContext.getEnv().reset();
-            }
+            scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();
         }
     }
@@ -168,9 +159,7 @@ public class ScriptExecutor {
             log.error("执行脚本失败，apiName: {}", apiName, e);
             throw e;
         } finally {
-            if (scriptContext.isNeedResetEnv()) {
-                scriptContext.getEnv().reset();
-            }
+            scriptContext.getEnv().reset();
             scriptContext.getThreadLocalCase().remove();
         }
     }

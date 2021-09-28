@@ -14,7 +14,7 @@ public interface ScriptService {
 
     Object runScript(JSONObject object);
 
-    String toScript(Integer id, Integer projectId, String apiName);
+    String toScript(Integer id, Integer projectId, String apiName, Boolean var);
 
     Map<String, Object> codeTips();
 
