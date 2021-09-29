@@ -12,6 +12,7 @@ import cn.veasion.auto.utils.Constants;
 import cn.veasion.auto.utils.ExcelExportUtils;
 import cn.veasion.auto.utils.ExcelImportUtils;
 import cn.veasion.auto.utils.StringUtils;
+import cn.veasion.auto.utils.SwaggerUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -96,12 +97,18 @@ public class ApiRequestController extends BaseController {
             map.put("projectName", "项目名称");
         }
         map.putAll(exportMap);
-        ExcelExportUtils.export(response, "接口.xlsx", map, apiRequestService.listPage(apiRequest, 1, Constants.MAX_EXPORT_SIZE));
+        ExcelExportUtils.export(response, "API接口.xlsx", map, apiRequestService.listPage(apiRequest, 1, Constants.MAX_EXPORT_SIZE));
+    }
+
+    @GetMapping("/downloadSwaggerApi")
+    public void downloadSwaggerApi(HttpServletResponse response, String swaggerUrl) throws Exception {
+        List<ApiRequestPO> list = SwaggerUtils.swaggerToApiRequest(swaggerUrl);
+        ExcelExportUtils.export(response, "swagger接口.xlsx", exportMap, list);
     }
 
     @GetMapping("/downloadTemplate")
     public void downloadTemplate(HttpServletResponse response) throws IOException {
-        ExcelExportUtils.export(response, "接口导入模板.xlsx", exportMap.values().toArray(new String[]{}));
+        ExcelExportUtils.export(response, "API接口导入模板.xlsx", exportMap.values().toArray(new String[]{}));
     }
 
     @PostMapping("/import")

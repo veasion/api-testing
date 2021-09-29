@@ -144,7 +144,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             return str;
         }
         Object val = scriptContext.getEnv().eval(str);
-        return val == null ? str : val.toString();
+        return val == null ? null : val.toString();
     }
 
     private String eval(String str, Map<String, Object> params) {
@@ -152,7 +152,7 @@ public class HttpScriptBindBean extends AbstractScriptBindBean {
             return str;
         }
         Object val = scriptContext.getEnv().eval(str, params, true);
-        return val == null ? str : val.toString();
+        return val == null ? null : val.toString();
     }
 
     private static String toString(Object data) {

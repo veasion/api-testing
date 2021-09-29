@@ -287,6 +287,13 @@ public class HttpUtils {
             return response;
         }
 
+        public String getResponseToString() {
+            if (response == null) {
+                return null;
+            }
+            return response instanceof String ? (String) response : String.valueOf(response);
+        }
+
         public void setResponse(Object response) {
             this.response = response;
         }
