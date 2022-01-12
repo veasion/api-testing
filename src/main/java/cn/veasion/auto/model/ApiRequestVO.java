@@ -12,6 +12,7 @@ import lombok.Data;
 public class ApiRequestVO extends ApiRequestPO {
 
     private String projectName;
+    private String query;
 
     public String getProjectName() {
         return projectName;
@@ -19,5 +20,13 @@ public class ApiRequestVO extends ApiRequestPO {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 }

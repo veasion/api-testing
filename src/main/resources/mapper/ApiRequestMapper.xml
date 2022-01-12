@@ -5,13 +5,13 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into api_request
         (
-            project_id, api_name, api_desc, method, 
+            project_id, api_name, api_group, api_desc, method,
             url, body, script, is_available, headers_json,
             is_deleted, create_username, create_time, update_username, update_time
         )
         values
         (
-            #{projectId}, #{apiName}, #{apiDesc}, #{method}, 
+            #{projectId}, #{apiName}, #{apiGroup}, #{apiDesc}, #{method},
             #{url}, #{body}, #{script}, #{isAvailable}, #{headersJson},
             #{isDeleted}, #{createUsername}, #{createTime}, #{updateUsername}, #{updateTime}
         )
@@ -20,14 +20,14 @@
     <insert id="insertAll">
         insert into api_request
         (
-            project_id, api_name, api_desc, method, 
+            project_id, api_name, api_group, api_desc, method,
             url, body, script, is_available, headers_json,
             is_deleted, create_username, create_time, update_username, update_time
         )
         values
         <foreach collection="list" item="obj" separator=",">
         (
-            #{obj.projectId}, #{obj.apiName}, #{obj.apiDesc}, #{obj.method}, 
+            #{obj.projectId}, #{obj.apiName}, #{obj.apiGroup}, #{obj.apiDesc}, #{obj.method},
             #{obj.url}, #{obj.body}, #{obj.script}, #{obj.isAvailable}, #{obj.headersJson},
             #{obj.isDeleted}, #{obj.createUsername}, #{obj.createTime}, #{obj.updateUsername}, #{obj.updateTime}
         )
@@ -42,6 +42,9 @@
             </if>
             <if test="apiName != null">
                 api_name = #{apiName},
+            </if>
+            <if test="apiGroup != null">
+                api_group = #{apiGroup},
             </if>
             <if test="apiDesc != null">
                 api_desc = #{apiDesc},
@@ -89,6 +92,7 @@
             project_id = #{projectId},
             api_name = #{apiName},
             api_desc = #{apiDesc},
+            api_group = #{apiGroup},
             method = #{method},
             url = #{url},
             headers_json = #{headersJson},
@@ -124,6 +128,9 @@
         left join project p on t.project_id = p.id and p.is_deleted = 0
         where t.is_deleted = 0
         <include refid="whereSQL" />
+        <if test="query != null and query.trim() != ''">
+            and (t.api_group like concat('%', #{query}, '%') or t.api_desc like concat('%', #{query}, '%'))
+        </if>
         order by t.id desc
     </select>
 
@@ -152,6 +159,9 @@
         </if>
         <if test="apiName != null and apiName.trim() != ''">
             and t.api_name like concat('%', #{apiName}, '%')
+        </if>
+        <if test="apiGroup != null and apiGroup.trim() != ''">
+            and t.api_group like concat('%', #{apiGroup}, '%')
         </if>
         <if test="apiDesc != null and apiDesc.trim() != ''">
             and t.api_desc like concat('%', #{apiDesc}, '%')

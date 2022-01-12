@@ -60,8 +60,9 @@ DROP TABLE IF EXISTS `api_request`;
 CREATE TABLE `api_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_id` int(11) NOT NULL COMMENT '项目id',
-  `api_name` varchar(50) DEFAULT NULL COMMENT '命名',
-  `api_desc` varchar(100) DEFAULT NULL COMMENT '请求描述',
+  `api_name` varchar(100) DEFAULT NULL COMMENT '命名',
+  `api_group` varchar(255) DEFAULT NULL COMMENT '分组',
+  `api_desc` varchar(255) DEFAULT NULL COMMENT '请求描述',
   `method` varchar(20) DEFAULT NULL COMMENT '请求方法',
   `url` varchar(500) DEFAULT NULL COMMENT '请求url',
   `headers_json` varchar(300) DEFAULT NULL COMMENT '请求头',
@@ -167,10 +168,10 @@ INSERT INTO `project` VALUES (1, '接口自动化测试', 'api-testing', 1, 0, '
 -- 项目配置
 INSERT INTO `project_config` VALUES (1, 1, 1, '{\n  \"baseUrl\": \"http://127.0.0.1:8080\",\n  \"username\": \"admin\",\n  \"password\": 123456,\n  \"dingtalkRobotAccessToken\": \"\"\n}', '// 该脚本是在所有脚本执行前触发，策略开始前执行\n// 脚本适用于提前登录，请求/响应拦截处理\n\n// 登录\nlet result = http.postJson(\"${baseUrl}/api/auth/login\", {\n  \"username\": \"${username}\",\n  \"password\": \"${password}\"\n});\n\nlet token = result.data.token;\nlog.info(\'登录用户：\' + env.eval(\'${username}\') + \'，token：\' + token);\n\n// 请求拦截处理，设置授权headers\nscriptContext.addRequestProcessor(function(request) {\n  request.addHeaders(\"Authorization\", token);\n});\n\n// 响应拦截处理\nscriptContext.addResponseProcessor(function(response, status, log) {\n  // 这里判断请求是否成功（这里是接口失败，并不是脚本执行异常）\n  if (status == 200 && response && response.code && response.code != \'200\') {\n    // code不等于200时请求失败，修改日志状态: 2成功 3 失败\n    log.status = 3;\n	// 记录失败日志\n    log.appendLog(response.message || \"\");\n  }\n});', '// 该脚本是在所有脚本执行后触发，策略正常执行完成后执行\n// 脚本适用于用来监听脚本执行情况\n\n// 发送钉钉群通知示例\nlet projectName = scriptContext.project.name;\nlet strategyName = scriptContext.strategy != null ? scriptContext.strategy.name : null\nif (scriptContext.strategy && scriptContext.strategy.strategy == 2) {\n	// TODO 压测不处理\n} else {\n	// 定时任务\n	if (scriptContext.refLog.status == 2) {\n		// 全部执行成功\n		sendNotice(projectName + \', 策略\' + strategyName + \'执行通过\');\n	} else {\n		// 策略执行不通过\n		for (let i in scriptContext.apiLogList) {\n			let apiLog = scriptContext.apiLogList[i];\n			if (apiLog.status == 3) {\n				// 执行不通过的请求\n				sendNotice(projectName + \', 接口: \' + apiLog.url + \' 执行失败\');\n			}\n		}\n	}\n}\n\nfunction sendNotice(msg) {\n	// 发送钉钉群通知\n	let accessToken = env.eval(\'${dingtalkRobotAccessToken}\');\n    if (!accessToken) {\n      // 没有配置钉钉机器人群token\n      return\n    }\n	http.postJson(\'https://oapi.dingtalk.com/robot/send?access_token=\' + accessToken, {\n		msgtype: \'text\', \n		text: {\n			content: \'接口自动化测试：\' + msg\n		}\n	});\n}', '// 该脚本是在策略执行异常时触发\n// 脚本适用于异常监听通知\n\n// 发送钉钉群通知示例\nlet projectName = scriptContext.project.name;\nlet strategyName = scriptContext.strategy != null ? scriptContext.strategy.name : null\n// 发送钉钉群通知\nlet accessToken = env.eval(\'${dingtalkRobotAccessToken}\');\nif (accessToken) {\n  http.postJson(\'https://oapi.dingtalk.com/robot/send?access_token=\' + accessToken, {\n    msgtype: \'text\', \n    text: {\n      content: \'接口自动化测试：\' + projectName + \', 策略\' + strategyName + \'执行异常\'\n    }\n  });\n}', 1, 0, 'admin', NOW(), 'admin', NOW());
 -- 测试接口
-INSERT INTO `api_request` VALUES (1, 1, '/user/listPage', '用户列表', 'GET', '/api/user/listPage?pageNo=${pageNo|1}&pageSize=${pageSize|10}', '', NULL, NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
-INSERT INTO `api_request` VALUES (2, 1, '/serverInfo', '服务器信息', 'GET', '/api/public/serverInfo', '', NULL, NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
-INSERT INTO `api_request` VALUES (3, 1, '/runScript', '运行脚本', 'POST', '/api/script/runScript', '{\"Content-Type\":\"application/json\"}', '{\n  \"projectId\": 1,\n  \"script\": \"log.info(\'hello api-testing !\');\"\n}', NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
-INSERT INTO `api_request` VALUES (4, 1, '/project/getById', '根据ID查询项目', 'GET', '/api/project/getById?id=${id}', '', NULL, NULL, 1, 0, 'admin', '2021-09-22 15:36:24', 'admin', '2021-09-22 15:36:24');
+INSERT INTO `api_request` VALUES (1, 1, '/user/listPage', '默认分组', '用户列表', 'GET', '/api/user/listPage?pageNo=${pageNo|1}&pageSize=${pageSize|10}', '', NULL, NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
+INSERT INTO `api_request` VALUES (2, 1, '/serverInfo', '默认分组', '服务器信息', 'GET', '/api/public/serverInfo', '', NULL, NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
+INSERT INTO `api_request` VALUES (3, 1, '/runScript', '默认分组', '运行脚本', 'POST', '/api/script/runScript', '{\"Content-Type\":\"application/json\"}', '{\n  \"projectId\": 1,\n  \"script\": \"log.info(\'hello api-testing !\');\"\n}', NULL, 1, 0, 'admin', NOW(), 'admin', NOW());
+INSERT INTO `api_request` VALUES (4, 1, '/project/getById', '默认分组', '根据ID查询项目', 'GET', '/api/project/getById?id=${id}', '', NULL, NULL, 1, 0, 'admin', '2021-09-22 15:36:24', 'admin', '2021-09-22 15:36:24');
 -- 测试用例
 INSERT INTO `api_test_case` VALUES (1, 1, '根据ID查询项目', '/project/getById', '项目管理', 'veasion', 'let response = http.request(\'/project/getById\', {\n	\"id\": scriptContext.project.id\n});\nassertNotNull(response);\nassertEquals(response.data.name, scriptContext.project.name);\n', 1, 0, 'admin', NOW(), 'admin', NOW());
 -- 测试执行策略

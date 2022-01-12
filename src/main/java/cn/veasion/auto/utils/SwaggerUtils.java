@@ -27,7 +27,7 @@ public class SwaggerUtils {
         return list;
     }
 
-    public static JSONArray getSwaggerResources(String swaggerUrl) throws Exception {
+    private static JSONArray getSwaggerResources(String swaggerUrl) throws Exception {
         String params = null;
         swaggerUrl = swaggerUrl.trim();
         int idx = swaggerUrl.lastIndexOf("?");
@@ -69,7 +69,7 @@ public class SwaggerUtils {
         return result;
     }
 
-    public static List<ApiRequestPO> swaggerDocsToApiRequest(String apiDocsUrl) throws Exception {
+    private static List<ApiRequestPO> swaggerDocsToApiRequest(String apiDocsUrl) throws Exception {
         HttpUtils.HttpResponse response = HttpUtils.request(HttpUtils.HttpRequest.build(apiDocsUrl, "GET"));
         if (!response.success()) {
             throw new BusinessException("请求失败: " + apiDocsUrl);
@@ -93,11 +93,18 @@ public class SwaggerUtils {
             if (StringUtils.isEmpty(desc)) {
                 desc = apiObj.getJSONArray("tags").get(0).toString();
             }
+            if (apiObj.getJSONArray("tags") != null) {
+                String tag = apiObj.getJSONArray("tags").get(0).toString();
+                if (!"".equals(tag)) {
+                    desc = tag + "-" + desc;
+                }
+            }
             apiRequest = new ApiRequestPO();
             String url = basePath + uri;
             apiRequest.setApiName(apiName(url));
             apiRequest.setMethod(method.toUpperCase());
             apiRequest.setApiDesc(desc);
+            apiRequest.setApiGroup(basePath.replace("/", ""));
             JSONArray consumes = apiObj.getJSONArray("consumes");
             if (consumes != null && !consumes.isEmpty()) {
                 if (consumes.toString().contains("application/json")) {

@@ -24,6 +24,10 @@ public class ApiRequestPO extends BasePO<Integer> {
      */
     private String apiName;
     /**
+     * 分组
+     */
+    private String apiGroup;
+    /**
      * 请求描述
      */
     private String apiDesc;

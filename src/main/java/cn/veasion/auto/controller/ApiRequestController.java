@@ -101,8 +101,11 @@ public class ApiRequestController extends BaseController {
     }
 
     @GetMapping("/downloadSwaggerApi")
-    public void downloadSwaggerApi(HttpServletResponse response, String swaggerUrl) throws Exception {
+    public void downloadSwaggerApi(HttpServletResponse response, String swaggerUrl, @RequestParam(required = false) String apiGroup) throws Exception {
         List<ApiRequestPO> list = SwaggerUtils.swaggerToApiRequest(swaggerUrl);
+        if (apiGroup != null && !"".equals(apiGroup)) {
+            list.forEach(s -> s.setApiGroup(apiGroup));
+        }
         ExcelExportUtils.export(response, "swagger接口.xlsx", exportMap, list);
     }
 
@@ -148,6 +151,7 @@ public class ApiRequestController extends BaseController {
     private static LinkedHashMap<String, String> exportMap = new LinkedHashMap<String, String>() {
         {
             put("apiName", "命名");
+            put("apiGroup", "接口分组");
             put("apiDesc", "接口描述");
             put("method", "请求方法");
             put("url", "请求URL");
