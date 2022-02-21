@@ -134,6 +134,17 @@
         order by t.id desc
     </select>
 
+    <select id="search" resultType="cn.veasion.auto.model.ApiRequestVO">
+        select t.id, t.project_id, t.api_name, t.api_group, t.api_desc, t.url, t.method
+        from api_request t
+        where t.is_deleted = 0 and t.project_id = #{projectId}
+        <if test="query != null and query.trim() != ''">
+        and (t.url like concat('%', #{query}, '%') or t.api_desc like concat('%', #{query}, '%'))
+        </if>
+        order by t.id desc
+        limit #{limit}
+    </select>
+
     <select id="queryAllApiName" resultType="java.lang.String">
         select t.api_name from api_request t
         inner join project p on t.project_id = p.id and p.is_deleted = 0

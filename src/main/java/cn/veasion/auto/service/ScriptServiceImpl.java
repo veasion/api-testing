@@ -246,6 +246,7 @@ public class ScriptServiceImpl implements ScriptService {
                     String key = iterator.next();
                     if (varJson.containsKey(key)) {
                         keys.remove(key);
+                        iterator = keys.iterator();
                     }
                 }
             }

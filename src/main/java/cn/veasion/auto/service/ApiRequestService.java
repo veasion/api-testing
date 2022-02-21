@@ -21,6 +21,8 @@ public interface ApiRequestService {
 
     Page<ApiRequestVO> listPage(ApiRequestVO apiRequestVO, int pageIndex, int pageSize);
 
+    List<ApiRequestVO> search(Integer projectId, String query, Integer limit);
+
     void saveOrUpdate(ApiRequestPO apiRequestPO);
 
     int delete(int id);

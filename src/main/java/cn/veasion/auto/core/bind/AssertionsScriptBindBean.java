@@ -110,6 +110,9 @@ public class AssertionsScriptBindBean extends AbstractScriptBindBean {
     }
 
     public void throwException(String message) {
+        if (message.length() > 60) {
+            message = message.substring(0, 60) + "...";
+        }
         throw new AssertException(message);
     }
 

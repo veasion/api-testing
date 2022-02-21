@@ -1,5 +1,6 @@
 package cn.veasion.auto.core;
 
+import cn.veasion.auto.exception.AssertException;
 import cn.veasion.auto.exception.BusinessException;
 import cn.veasion.auto.mapper.ApiExecuteStrategyMapper;
 import cn.veasion.auto.mapper.StrategyCaseRelationMapper;
@@ -77,17 +78,19 @@ public class StrategyExecutor {
             if (StringUtils.hasText(projectConfig.getBeforeScript())) {
                 scriptExecutor.executeScript(projectConfig.getBeforeScript(), scriptContext);
             }
+            refLog.setStatus(null);
             if (ApiExecuteStrategyPO.STRATEGY_PRESSURE.equals(strategy.getStrategy())) {
                 // 接口压测
-                refLog.setStatus(null);
                 this.runPressure(scriptContext);
                 if (refLog.getStatus() == null) {
                     refLog.setStatus(ApiLogPO.STATUS_SUC);
                 }
             } else {
                 // 任务执行
-                this.runStrategy(scriptContext);
-                refLog.setStatus(ApiLogPO.STATUS_SUC);
+                this.runStrategy(scriptContext, refLog);
+                if (refLog.getStatus() == null) {
+                    refLog.setStatus(ApiLogPO.STATUS_SUC);
+                }
             }
             if (StringUtils.hasText(projectConfig.getAfterScript())) {
                 scriptExecutor.tryExecuteScript(projectConfig.getAfterScript(), scriptContext);
@@ -136,15 +139,13 @@ public class StrategyExecutor {
     /**
      * 定时任务普通执行
      */
-    private void runStrategy(ScriptContext scriptContext) throws ScriptException {
+    private void runStrategy(ScriptContext scriptContext, ApiLogPO log) throws ScriptException {
         ApiExecuteStrategyPO strategy = scriptContext.getStrategy();
         boolean script = ApiExecuteStrategyPO.TYPE_SCRIPT.equals(strategy.getType());
         if (script) {
             scriptExecutor.execute(strategy, scriptContext);
         } else {
-            ApiLogPO exceptionLog = new ApiLogPO();
-            executeTestCaseAll(scriptContext, exceptionLog);
-            scriptContext.getRefLog().appendLog(exceptionLog.getMsg());
+            executeTestCaseAll(scriptContext, true, log);
         }
     }
 
@@ -203,7 +204,7 @@ public class StrategyExecutor {
                 if (script) {
                     scriptExecutor.execute(strategy, scriptContext);
                 } else {
-                    executeTestCaseAll(scriptContext, exceptionLog);
+                    executeTestCaseAll(scriptContext, false, exceptionLog);
                 }
             } catch (Exception e) {
                 scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
@@ -230,14 +231,25 @@ public class StrategyExecutor {
         }
     }
 
-    private void executeTestCaseAll(ScriptContext scriptContext, ApiLogPO exceptionLog) {
+    private void executeTestCaseAll(ScriptContext scriptContext, boolean cron, ApiLogPO exceptionLog) {
         loadCase(scriptContext.getStrategy(), casePO -> {
             try {
                 scriptExecutor.execute(casePO, scriptContext);
-            } catch (ScriptException e) {
-                log.error("执行case脚本异常，caseName: {}", casePO.getCaseName(), e);
+            } catch (Exception e) {
                 scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
-                exceptionLog.setMsg(e.getClass().getSimpleName() + ": " + e.getMessage());
+                if (cron) {
+                    scriptContext.getStrategy().appendException(casePO, scriptContext.getApiLogList(), e.getMessage());
+                }
+                if (!(e instanceof AssertException)) {
+                    log.error("执行case脚本异常，caseName: {}", casePO.getCaseName(), e);
+                    if (exceptionLog != null) {
+                        exceptionLog.setMsg(e.getClass().getSimpleName() + ": " + e.getMessage());
+                    }
+                }
+            } finally {
+                if (cron) {
+                    scriptContext.getApiLogList().clear();
+                }
             }
         });
     }

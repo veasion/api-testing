@@ -2,6 +2,7 @@ package cn.veasion.auto.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -72,16 +73,12 @@ public class ExcelImportUtils {
                     continue;
                 }
                 Object value;
-                switch (cell.getCellTypeEnum()) {
-                    case NUMERIC:
-                        value = cell.getNumericCellValue();
-                        break;
-                    case BOOLEAN:
-                        value = cell.getBooleanCellValue();
-                        break;
-                    default:
-                        value = cell.getStringCellValue();
-                        break;
+                if (CellType.NUMERIC.equals(cell.getCellType())) {
+                    value = cell.getNumericCellValue();
+                } else if (CellType.BOOLEAN.equals(cell.getCellType())) {
+                    value = cell.getBooleanCellValue();
+                } else {
+                    value = cell.getStringCellValue();
                 }
                 jsonObject.put(field, value);
             }

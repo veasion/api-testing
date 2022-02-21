@@ -55,6 +55,11 @@ public class ApiRequestController extends BaseController {
         return R.ok(apiRequestService.listPage(apiRequestVO, 1, Constants.MAX_PAGE_SIZE));
     }
 
+    @GetMapping("/search")
+    public R<List<ApiRequestVO>> search(@RequestParam("projectId") Integer projectId, @RequestParam("query") String query) {
+        return R.ok(apiRequestService.search(projectId, query, 100));
+    }
+
     @GetMapping("/getById")
     public R<ApiRequestPO> getById(@RequestParam("id") Integer id) {
         return R.ok(apiRequestService.getById(id));

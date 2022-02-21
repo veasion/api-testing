@@ -47,6 +47,8 @@ public class HttpUtils {
     public static final String CONTENT_TYPE_JSON = "application/json";
     public static final String CONTENT_TYPE_FORM_DATA = "application/x-www-form-urlencoded";
     private static final PoolingHttpClientConnectionManager CONNECTION_MANAGER;
+    private static final int MAX_CONNECT_TIMEOUT = 8000;
+    private static final int MAX_SOCKET_TIMEOUT = 30000;
 
     static {
         // http
@@ -79,30 +81,37 @@ public class HttpUtils {
         // body
         setBodyEntity(requestBase, contentType, request.getBody());
 
-        HttpClient client = getHttpClient(request.getUrl(), requestBase);
-        long startTime = System.currentTimeMillis();
-        org.apache.http.HttpResponse response = client.execute(requestBase);
-
-        HttpResponse httpResponse = new HttpResponse();
-        httpResponse.setReqTime(System.currentTimeMillis() - startTime);
-        httpResponse.setStatus(response.getStatusLine().getStatusCode());
-        Header[] allHeaders = response.getAllHeaders();
-        if (allHeaders != null && allHeaders.length > 0) {
-            httpResponse.setHeaders(new HashMap<>());
-            for (Header header : allHeaders) {
-                httpResponse.getHeaders().put(header.getName(), header.getValue());
+        try {
+            HttpClient client = getHttpClient(request.getUrl(), requestBase);
+            org.apache.http.HttpResponse response;
+            long startTime = System.currentTimeMillis();
+            response = client.execute(requestBase);
+            HttpResponse httpResponse = new HttpResponse();
+            httpResponse.setReqTime(System.currentTimeMillis() - startTime);
+            httpResponse.setStatus(response.getStatusLine().getStatusCode());
+            Header[] allHeaders = response.getAllHeaders();
+            if (allHeaders != null && allHeaders.length > 0) {
+                httpResponse.setHeaders(new HashMap<>());
+                for (Header header : allHeaders) {
+                    httpResponse.getHeaders().put(header.getName(), header.getValue());
+                }
             }
-        }
-        if (request.responseHandler != null) {
-            httpResponse.setResponse(request.responseHandler.apply(response.getEntity()));
-        } else {
-            String charset = CHARSET_DEFAULT;
-            if (contentType != null && contentType.getCharset() != null) {
-                charset = contentType.getCharset().name();
+            if (request.responseHandler != null) {
+                httpResponse.setResponse(request.responseHandler.apply(response.getEntity()));
+            } else {
+                String charset = CHARSET_DEFAULT;
+                if (contentType != null && contentType.getCharset() != null) {
+                    charset = contentType.getCharset().name();
+                }
+                httpResponse.setResponse(IOUtils.toString(response.getEntity().getContent(), charset));
             }
-            httpResponse.setResponse(IOUtils.toString(response.getEntity().getContent(), charset));
+            return httpResponse;
+        } catch (Exception e) {
+            requestBase.abort();
+            throw e;
+        } finally {
+            requestBase.releaseConnection();
         }
-        return httpResponse;
     }
 
     private static void setBodyEntity(HttpRequestBase requestBase, ContentType contentType, Object body) {
@@ -159,6 +168,9 @@ public class HttpUtils {
 
     private static HttpClient getHttpClient(String url, HttpRequestBase request) {
         RequestConfig.Builder customReqConf = RequestConfig.custom();
+        customReqConf.setSocketTimeout(MAX_SOCKET_TIMEOUT);
+        customReqConf.setConnectTimeout(MAX_CONNECT_TIMEOUT);
+        customReqConf.setConnectionRequestTimeout(MAX_CONNECT_TIMEOUT);
         request.setConfig(customReqConf.build());
         if (isHttps(url)) {
             try {

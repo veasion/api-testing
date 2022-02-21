@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,20 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
      * 最后一次执行状态：1 部分成功 2 全部成功 3 失败
      */
     private Integer status;
+
+    private List<StrategyExceptionVO> exceptionList;
+
+    public void appendException(ApiTestCasePO testCase, List<ApiLogPO> apiLogList, String error) {
+        if (exceptionList == null) {
+            exceptionList = new ArrayList<>();
+        }
+        StrategyExceptionVO strategyExceptionVO = new StrategyExceptionVO();
+        testCase.setScript(null);
+        strategyExceptionVO.setError(error);
+        strategyExceptionVO.setTestCase(testCase);
+        strategyExceptionVO.setApiLogList(new ArrayList<>(apiLogList));
+        exceptionList.add(strategyExceptionVO);
+    }
 
     public ThreadStrategy toThreadStrategy() {
         if (!StringUtils.hasText(threadStrategyJson)) {

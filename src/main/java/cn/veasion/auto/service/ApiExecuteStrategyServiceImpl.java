@@ -136,7 +136,7 @@ public class ApiExecuteStrategyServiceImpl implements ApiExecuteStrategyService,
         }
         if (oldCaseIds.size() > 0) {
             // 删除
-            strategyCaseRelationMapper.delete(apiExecuteStrategy.getId(), new ArrayList<>(newCaseIds));
+            strategyCaseRelationMapper.delete(apiExecuteStrategy.getId(), new ArrayList<>(oldCaseIds));
         }
     }
 

@@ -52,6 +52,11 @@ public class ApiRequestServiceImpl implements ApiRequestService {
     }
 
     @Override
+    public List<ApiRequestVO> search(Integer projectId, String query, Integer limit) {
+        return apiRequestMapper.search(projectId, query, limit);
+    }
+
+    @Override
     public void saveOrUpdate(ApiRequestPO apiRequestPO) {
         apiRequestPO.setUpdateUsername(UserUtils.getUsername());
         if (apiRequestPO.getProjectId() == null) {
