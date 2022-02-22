@@ -232,13 +232,18 @@ public class StrategyExecutor {
     }
 
     private void executeTestCaseAll(ScriptContext scriptContext, boolean cron, ApiLogPO exceptionLog) {
+        List<ApiLogPO> apiLogList = scriptContext.getApiLogList();
         loadCase(scriptContext.getStrategy(), casePO -> {
+            List<ApiLogPO> tempApiLogList = new ArrayList<>();
             try {
+                if (cron) {
+                    scriptContext.apiLogList = tempApiLogList;
+                }
                 scriptExecutor.execute(casePO, scriptContext);
             } catch (Exception e) {
                 scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
                 if (cron) {
-                    scriptContext.getStrategy().appendException(casePO, scriptContext.getApiLogList(), e.getMessage());
+                    scriptContext.getStrategy().appendException(casePO, tempApiLogList, e.getMessage());
                 }
                 if (!(e instanceof AssertException)) {
                     log.error("执行case脚本异常，caseName: {}", casePO.getCaseName(), e);
@@ -248,7 +253,12 @@ public class StrategyExecutor {
                 }
             } finally {
                 if (cron) {
-                    scriptContext.getApiLogList().clear();
+                    ProjectConfigPO projectConfig = scriptContext.getProject().getProjectConfig();
+                    boolean openReqLog = projectConfig != null && Constants.YES.equals(projectConfig.getOpenReqLog());
+                    if (openReqLog) {
+                        apiLogList.addAll(tempApiLogList);
+                    }
+                    scriptContext.apiLogList = apiLogList;
                 }
             }
         });

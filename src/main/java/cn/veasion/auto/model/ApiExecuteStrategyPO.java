@@ -81,7 +81,7 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
         testCase.setScript(null);
         strategyExceptionVO.setError(error);
         strategyExceptionVO.setTestCase(testCase);
-        strategyExceptionVO.setApiLogList(new ArrayList<>(apiLogList));
+        strategyExceptionVO.setApiLogList(apiLogList);
         exceptionList.add(strategyExceptionVO);
     }
 

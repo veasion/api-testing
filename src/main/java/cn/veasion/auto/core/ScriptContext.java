@@ -26,7 +26,7 @@ public class ScriptContext {
     private ApiLogPO refLog;
     private ProjectPO project;
     private ApiExecuteStrategyPO strategy;
-    private final List<ApiLogPO> apiLogList = new ArrayList<>();
+    List<ApiLogPO> apiLogList = new ArrayList<>();
     private final Map<String, ScriptBindBean> root = new HashMap<>();
     private final Map<String, Object> contextMap = new ConcurrentHashMap<>();
     private final ThreadLocal<ApiTestCasePO> threadLocalCase = new ThreadLocal<>();
@@ -110,7 +110,7 @@ public class ScriptContext {
         if (refLog) {
             this.refLog = apiLog;
         } else {
-            synchronized (apiLogList) {
+            synchronized (this) {
                 apiLogList.add(apiLog);
             }
         }
