@@ -2,10 +2,15 @@ package cn.veasion.auto.core.bind;
 
 import cn.veasion.auto.utils.EvalAnalysisUtils;
 import cn.veasion.auto.utils.JavaScriptUtils;
+import cn.veasion.auto.utils.MailUtils;
 import cn.veasion.auto.utils.RSAUtils;
 import com.alibaba.fastjson.JSON;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.objects.NativeDate;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -154,5 +160,24 @@ public class CommonScriptBindBean extends AbstractScriptBindBean {
         } while (--randomCount > 0);
         return newArray;
     }
+
+	public void sendMail(Object object) throws Exception {
+		MailUtils.MailVO mailVO;
+		if (object instanceof ScriptObjectMirror) {
+			mailVO = JavaScriptUtils.toObject((ScriptObjectMirror) object, MailUtils.MailVO.class);
+		} else if (object instanceof Map) {
+			mailVO = JSON.parseObject(JSON.toJSONString(object), MailUtils.MailVO.class);
+		} else {
+			mailVO = JSON.parseObject(object.toString(), MailUtils.MailVO.class);
+		}
+		MailUtils.send(mailVO);
+	}
+	
+	public String pinyin(String str) throws Exception {
+		HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
+		format.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+		format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+		return PinyinHelper.toHanYuPinyinString(str, format, "", true);
+	}
 
 }

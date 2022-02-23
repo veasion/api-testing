@@ -240,6 +240,7 @@ public class StrategyExecutor {
                     scriptContext.apiLogList = tempApiLogList;
                 }
                 scriptExecutor.execute(casePO, scriptContext);
+				scriptContext.getStrategy().appendSuccess(casePO);
             } catch (Exception e) {
                 scriptContext.getRefLog().setStatus(ApiLogPO.STATUS_FAIL);
                 if (cron) {

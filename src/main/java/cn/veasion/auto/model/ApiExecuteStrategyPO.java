@@ -71,8 +71,17 @@ public class ApiExecuteStrategyPO extends BasePO<Integer> {
      */
     private Integer status;
 
+	private List<ApiTestCasePO> successCaseList;
     private List<StrategyExceptionVO> exceptionList;
 
+	public void appendSuccess(ApiTestCasePO testCase) {
+		if (successCaseList == null) {
+			successCaseList = new ArrayList<>();
+		}
+		testCase.setScript(null);
+		successCaseList.add(testCase);
+	}
+	
     public void appendException(ApiTestCasePO testCase, List<ApiLogPO> apiLogList, String error) {
         if (exceptionList == null) {
             exceptionList = new ArrayList<>();

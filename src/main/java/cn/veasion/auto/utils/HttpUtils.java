@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
@@ -93,7 +94,13 @@ public class HttpUtils {
             if (allHeaders != null && allHeaders.length > 0) {
                 httpResponse.setHeaders(new HashMap<>());
                 for (Header header : allHeaders) {
-                    httpResponse.getHeaders().put(header.getName(), header.getValue());
+					httpResponse.getHeaders().compute(header.getName(), (k, v) -> {
+						if (v == null) {
+							return header.getValue();
+						} else {
+							return v + ";" + header.getValue();
+						}
+					});
                 }
             }
             if (request.responseHandler != null) {
@@ -117,7 +124,9 @@ public class HttpUtils {
     private static void setBodyEntity(HttpRequestBase requestBase, ContentType contentType, Object body) {
         if (body != null && requestBase instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) requestBase;
-            if (body instanceof String) {
+			if (body instanceof AbstractHttpEntity) {
+				entityRequest.setEntity((AbstractHttpEntity) body);
+            } else if (body instanceof String) {
                 entityRequest.setEntity(getStringEntity((String) body, contentType));
             } else if (body instanceof byte[]) {
                 entityRequest.setEntity(new ByteArrayEntity((byte[]) body, contentType));
