@@ -1,5 +1,6 @@
 package cn.veasion.auto.core.bind;
 
+import cn.veasion.auto.exception.ScriptException;
 import cn.veasion.auto.utils.EvalAnalysisUtils;
 import cn.veasion.auto.utils.JavaScriptUtils;
 import cn.veasion.auto.utils.MailUtils;
@@ -179,5 +180,16 @@ public class CommonScriptBindBean extends AbstractScriptBindBean {
 		format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
 		return PinyinHelper.toHanYuPinyinString(str, format, "", true);
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	public Object assign(Object target, Object source) {
+	    if (target instanceof Map && source instanceof Map) {
+	        ((Map<?, ?>) target).putAll((Map) source);
+	        return target;
+	    }
+	    if (source == null) {
+	        return target;
+	    }
+	    throw new ScriptException("参数错误");
+	}
 }

@@ -19,7 +19,8 @@ public abstract class AbstractScriptBindBean implements ScriptBindBean {
 
     @Override
     public String var() {
-        return getClass().getSimpleName().replace(ScriptBindBean.class.getSimpleName(), "").toLowerCase();
+		String name = getClass().getSimpleName().replace(ScriptBindBean.class.getSimpleName(), "");
+        return name.substring(0, 1).toLowerCase() + name.substring(1);
     }
 
     @Override
