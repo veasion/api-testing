@@ -13,4 +13,7 @@ public final class Constants {
     public static final String BASE_URL_KEY = "baseUrl";
     public static final String DEFAULT_HTTP_PROTOCOL = "http://";
 
+    public static final String TEST_CASE_PARAMS_KEY = "__ARGS__";
+    public static final String TEST_CASE_RESULT_KEY = "__RESULT__";
+
 }
